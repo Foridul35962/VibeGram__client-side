@@ -2,11 +2,11 @@ import React, { useState } from 'react'
 import logo from '../../assets/logo.png'
 import icon from '../../assets/icon.png'
 import { useDispatch, useSelector } from 'react-redux'
-import { verifyRegi } from '../../stores/slice/authSlice'
+import { verifyPass, verifyRegi } from '../../stores/slice/authSlice'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 
-const VerifyEmail = ({ email, mode }) => {
+const VerifyEmail = ({ email, mode, setIsverified }) => {
     const [otp, setOtp] = useState('')
     const dispatch = useDispatch()
     const { authLoading } = useSelector((state) => state.auth)
@@ -19,6 +19,13 @@ const VerifyEmail = ({ email, mode }) => {
                 await dispatch(verifyRegi({ email, otp })).unwrap()
                 toast.success('registration successful')
                 navigate('/login')
+            } catch (error) {
+                toast.error(error.message)
+            }
+        } else {
+            try {
+                await dispatch(verifyPass({ email, otp })).unwrap()
+                setIsverified(true)
             } catch (error) {
                 toast.error(error.message)
             }

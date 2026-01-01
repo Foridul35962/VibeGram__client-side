@@ -30,9 +30,45 @@ export const verifyRegi = createAsyncThunk(
 
 export const login = createAsyncThunk(
     'auth/login',
-    async(data, {rejectWithValue})=>{
+    async (data, { rejectWithValue }) => {
         try {
             const res = await axios.post(`${SERVER_URL}/login`, data)
+            return res.data
+        } catch (error) {
+            return rejectWithValue(error?.response?.data || "Something went wrong")
+        }
+    }
+)
+
+export const forgetPass = createAsyncThunk(
+    'auth/forgetPass',
+    async (data, { rejectWithValue }) => {
+        try {
+            const res = await axios.post(`${SERVER_URL}/forget-pass`, data)
+            return res.data
+        } catch (error) {
+            return rejectWithValue(error?.response?.data || "Something went wrong")
+        }
+    }
+)
+
+export const verifyPass = createAsyncThunk(
+    'auth/verifyPass',
+    async (data, { rejectWithValue }) => {
+        try {
+            const res = await axios.post(`${SERVER_URL}/verify-pass`, data)
+            return res.data
+        } catch (error) {
+            return rejectWithValue(error?.response?.data || "Something went wrong")
+        }
+    }
+)
+
+export const resetPass = createAsyncThunk(
+    'auth/resetPass',
+    async (data, { rejectWithValue }) => {
+        try {
+            const res = await axios.patch(`${SERVER_URL}/reset-pass`, data)
             return res.data
         } catch (error) {
             return rejectWithValue(error?.response?.data || "Something went wrong")
@@ -82,6 +118,39 @@ const authSlice = createSlice({
                 state.user = action.payload.data
             })
             .addCase(login.rejected, (state) => {
+                state.authLoading = false
+            })
+        //forgetPass
+        builder
+            .addCase(forgetPass.pending, (state) => {
+                state.authLoading = true
+            })
+            .addCase(forgetPass.fulfilled, (state, action) => {
+                state.authLoading = false
+            })
+            .addCase(forgetPass.rejected, (state) => {
+                state.authLoading = false
+            })
+        //verifyPass
+        builder
+            .addCase(verifyPass.pending, (state) => {
+                state.authLoading = true
+            })
+            .addCase(verifyPass.fulfilled, (state, action) => {
+                state.authLoading = false
+            })
+            .addCase(verifyPass.rejected, (state) => {
+                state.authLoading = false
+            })
+        //resetPass
+        builder
+            .addCase(resetPass.pending, (state) => {
+                state.authLoading = true
+            })
+            .addCase(resetPass.fulfilled, (state, action) => {
+                state.authLoading = false
+            })
+            .addCase(resetPass.rejected, (state) => {
                 state.authLoading = false
             })
     }
