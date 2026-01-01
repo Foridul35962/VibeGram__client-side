@@ -1,8 +1,29 @@
 import React from 'react'
 import logo from '../assets/logo.png'
 import icon from '../assets/icon.png'
+import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { login } from '../stores/slice/authSlice'
+import { toast } from 'react-toastify'
 
 const Login = () => {
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+    const { authLoading } = useSelector((state) => state.auth)
+
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        const email = e.target.email.value
+        const password = e.target.password.value
+        try {
+            await dispatch(login({ email, password })).unwrap()
+            toast.success('User loggedIn successfully')
+            navigate('/')
+        } catch (error) {
+            toast.error(error.message)
+        }
+    }
+
     return (
         <div className='bg-linear-to-br from-black via-gray-900 to-black min-h-screen flex justify-center items-center p-4'>
             {/* Main Container */}
@@ -20,7 +41,7 @@ const Login = () => {
                         </p>
                     </div>
 
-                    <form className='space-y-6 w-full max-w-md mx-auto lg:mx-0'>
+                    <form onSubmit={handleSubmit} className='space-y-6 w-full max-w-md mx-auto lg:mx-0'>
                         {/* Email Field */}
                         <div className='relative group'>
                             <input
@@ -57,14 +78,30 @@ const Login = () => {
 
                         {/* Forget Password */}
                         <div className="flex justify-end">
-                            <span className="text-sm font-bold text-gray-700 hover:text-black cursor-pointer transition-colors">
+                            <span
+                                onClick={() => navigate('/forget-pass')}
+                                className="text-sm font-bold text-gray-700 hover:text-black cursor-pointer transition-colors">
                                 Forgot Password?
                             </span>
                         </div>
 
                         {/* Action Button */}
-                        <button className='w-full cursor-pointer bg-black text-white py-4 rounded-2xl font-bold shadow-xl hover:shadow-2xl hover:bg-gray-800 transform transition-all active:scale-95 duration-200'>
-                            Sign In
+                        <button
+                            disabled={authLoading}
+                            className={`w-full py-4 mt-2 rounded-2xl font-bold shadow-xl transition-all duration-200 flex items-center justify-center
+                                            ${authLoading
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-black text-white cursor-pointer hover:shadow-2xl hover:bg-gray-800 active:scale-95'
+                                }`}
+                        >
+                            {authLoading ? (
+                                <div className='flex gap-2 items-center justify-center'>
+                                    <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                    <span>Please Wait...</span>
+                                </div>
+                            ) : (
+                                'Sign In'
+                            )}
                         </button>
                     </form>
 
@@ -72,7 +109,9 @@ const Login = () => {
                     <div className='mt-12 pt-6 border-t border-gray-100 text-center lg:text-left'>
                         <p className='text-gray-500 font-medium'>
                             Don't have an account?
-                            <button className='ml-2 text-black font-black cursor-pointer hover:underline underline-offset-4'>
+                            <button
+                                onClick={() => navigate('/registration')}
+                                className='ml-2 text-black font-black cursor-pointer hover:underline underline-offset-4'>
                                 Create Account
                             </button>
                         </p>

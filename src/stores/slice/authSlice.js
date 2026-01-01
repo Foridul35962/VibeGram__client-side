@@ -16,8 +16,33 @@ export const registration = createAsyncThunk(
     }
 )
 
+export const verifyRegi = createAsyncThunk(
+    'auth/verifyRegi',
+    async (data, { rejectWithValue }) => {
+        try {
+            const res = await axios.post(`${SERVER_URL}/verify-regi`, data)
+            return res.data
+        } catch (error) {
+            return rejectWithValue(error?.response?.data || "Something went wrong")
+        }
+    }
+)
+
+export const login = createAsyncThunk(
+    'auth/login',
+    async(data, {rejectWithValue})=>{
+        try {
+            const res = await axios.post(`${SERVER_URL}/login`, data)
+            return res.data
+        } catch (error) {
+            return rejectWithValue(error?.response?.data || "Something went wrong")
+        }
+    }
+)
+
 const initialState = {
-    authLoading: false
+    authLoading: false,
+    user: null
 }
 
 const authSlice = createSlice({
@@ -34,6 +59,29 @@ const authSlice = createSlice({
                 state.authLoading = false
             })
             .addCase(registration.rejected, (state) => {
+                state.authLoading = false
+            })
+        //verify register
+        builder
+            .addCase(verifyRegi.pending, (state) => {
+                state.authLoading = true
+            })
+            .addCase(verifyRegi.fulfilled, (state) => {
+                state.authLoading = false
+            })
+            .addCase(verifyRegi.rejected, (state) => {
+                state.authLoading = false
+            })
+        //login
+        builder
+            .addCase(login.pending, (state) => {
+                state.authLoading = true
+            })
+            .addCase(login.fulfilled, (state, action) => {
+                state.authLoading = false
+                state.user = action.payload.data
+            })
+            .addCase(login.rejected, (state) => {
                 state.authLoading = false
             })
     }
