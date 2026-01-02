@@ -6,6 +6,7 @@ import Home from './pages/Home'
 import Login from './pages/Login'
 import Registration from './pages/Registration'
 import ForgetPass from './pages/ForgetPass'
+import UseGetUser from './hooks/UseGetUser'
 
 
 const router = createBrowserRouter([
@@ -34,6 +35,10 @@ const router = createBrowserRouter([
 ])
 
 const App = () => {
+
+  //hooks
+  UseGetUser()
+
   return (
     <>
       <ToastContainer />
