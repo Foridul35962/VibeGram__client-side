@@ -112,7 +112,9 @@ const ResetPass = ({ email }) => {
                                 id="confirmPassword"
                                 {
                                 ...register('confirmPassword', {
-                                    required: 'confirmPassword is required'
+                                    required: 'confirmPassword is required',
+                                    validate: (value) =>
+                                        value === passwordValue || 'Passwords do not match'
                                 })
                                 }
                                 placeholder=" "
@@ -125,6 +127,14 @@ const ResetPass = ({ email }) => {
                                 Confirm New Password
                             </label>
                         </div>
+
+                        {
+                            errors.confirmPassword &&
+                            <div className='text-red-600'>
+                                {errors.confirmPassword.message}
+                            </div>
+                        }
+
                         {/* password validation */}
                         <div className='flex gap-1 flex-col *:flex *:gap-1 *:items-center'>
                             <div className={`${alphabetValidate ? 'text-green-600' : 'text-black'}`}>

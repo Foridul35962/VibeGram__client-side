@@ -2,18 +2,22 @@ import React, { useState } from 'react'
 import logo from '../../assets/logo.png'
 import icon from '../../assets/icon.png'
 import { useDispatch, useSelector } from 'react-redux'
-import { verifyPass, verifyRegi } from '../../stores/slice/authSlice'
+import { resendOtp, verifyPass, verifyRegi } from '../../stores/slice/authSlice'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 
 const VerifyEmail = ({ email, mode, setIsverified }) => {
     const [otp, setOtp] = useState('')
     const dispatch = useDispatch()
-    const { authLoading } = useSelector((state) => state.auth)
+    const { authLoading, otpLoading } = useSelector((state) => state.auth)
     const navigate = useNavigate()
 
     const handleSubmit = async (e) => {
         e.preventDefault()
+        if (otp.length !== 6) {
+            toast.error('otp not matched')
+            return null
+        }
         if (mode === 'register') {
             try {
                 await dispatch(verifyRegi({ email, otp })).unwrap()
@@ -26,6 +30,24 @@ const VerifyEmail = ({ email, mode, setIsverified }) => {
             try {
                 await dispatch(verifyPass({ email, otp })).unwrap()
                 setIsverified(true)
+            } catch (error) {
+                toast.error(error.message)
+            }
+        }
+    }
+
+    const handleResendOtp = async () => {
+        if (mode === 'register') {
+            try {
+                await dispatch(resendOtp({ email, mode })).unwrap()
+                toast.success('otp resend successful')
+            } catch (error) {
+                toast.error(error.message)
+            }
+        } else {
+            try {
+                await dispatch(resendOtp({ email, mode: 'resetPass' })).unwrap()
+                toast.success('otp resend successful')
             } catch (error) {
                 toast.error(error.message)
             }
@@ -110,8 +132,22 @@ const VerifyEmail = ({ email, mode, setIsverified }) => {
                     <div className='mt-10 pt-6 border-t border-gray-50 text-center lg:text-left'>
                         <p className='text-gray-500 text-sm font-medium'>
                             Didn't receive the code?
-                            <button className='ml-2 text-black font-black hover:underline underline-offset-4 decoration-2'>
-                                Resend Code
+                            <button
+                                onClick={handleResendOtp}
+                                disabled={otpLoading}
+                                className={`ml-2 font-bold transition-all duration-200 underline-offset-4 decoration-2 
+                                        ${otpLoading
+                                        ? 'text-gray-400 cursor-not-allowed'
+                                        : 'text-black hover:underline cursor-pointer active:scale-95'
+                                    }`}
+                            >
+                                {otpLoading ? (
+                                    <span className="flex items-center gap-1">
+                                        <span className="animate-pulse">Please wait...</span>
+                                    </span>
+                                ) : (
+                                    'Resend Code'
+                                )}
                             </button>
                         </p>
                         {

@@ -32,7 +32,9 @@ export const login = createAsyncThunk(
     'auth/login',
     async (data, { rejectWithValue }) => {
         try {
-            const res = await axios.post(`${SERVER_URL}/login`, data)
+            const res = await axios.post(`${SERVER_URL}/login`, data,
+                {withCredentials: true}
+            )
             return res.data
         } catch (error) {
             return rejectWithValue(error?.response?.data || "Something went wrong")
@@ -76,9 +78,21 @@ export const resetPass = createAsyncThunk(
     }
 )
 
+export const resendOtp = createAsyncThunk(
+    'auth/resendOtp',
+    async (data, {rejectWithValue})=>{
+        try {
+            const res = await axios.patch(`${SERVER_URL}/resend-otp`, data)
+            return res.data
+        } catch (error) {
+            return rejectWithValue(error?.response?.data || "Something went wrong")
+        }
+    }
+)
+
 const initialState = {
     authLoading: false,
-    user: null
+    otpLoading: false
 }
 
 const authSlice = createSlice({
@@ -115,7 +129,6 @@ const authSlice = createSlice({
             })
             .addCase(login.fulfilled, (state, action) => {
                 state.authLoading = false
-                state.user = action.payload.data
             })
             .addCase(login.rejected, (state) => {
                 state.authLoading = false
@@ -152,6 +165,17 @@ const authSlice = createSlice({
             })
             .addCase(resetPass.rejected, (state) => {
                 state.authLoading = false
+            })
+        //resend otp
+        builder
+            .addCase(resendOtp.pending, (state) => {
+                state.otpLoading = true
+            })
+            .addCase(resendOtp.fulfilled, (state, action) => {
+                state.otpLoading = false
+            })
+            .addCase(resendOtp.rejected, (state) => {
+                state.otpLoading = false
             })
     }
 })
