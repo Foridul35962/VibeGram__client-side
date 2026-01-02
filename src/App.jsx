@@ -7,30 +7,42 @@ import Login from './pages/Login'
 import Registration from './pages/Registration'
 import ForgetPass from './pages/ForgetPass'
 import UseGetUser from './hooks/UseGetUser'
+import ProtectedRoutes from './routes/ProtectedRoutes'
+import PublicRoutes from './routes/PublicRoutes'
 
 
 const router = createBrowserRouter([
   {
-    path: '/',
-    element: <MainLayout />,
+    element: <ProtectedRoutes />,
     children: [
       {
         path: '/',
-        element: <Home />
+        element: <MainLayout />,
+        children: [
+          {
+            path: '/',
+            element: <Home />
+          },
+        ]
       },
     ]
   },
   {
-    path: '/login',
-    element: <Login />
-  },
-  {
-    path: '/registration',
-    element: <Registration />
-  },
-  {
-    path: '/forget-pass',
-    element: <ForgetPass />
+    element: <PublicRoutes />,
+    children: [
+      {
+        path: '/login',
+        element: <Login />
+      },
+      {
+        path: '/registration',
+        element: <Registration />
+      },
+      {
+        path: '/forget-pass',
+        element: <ForgetPass />
+      }
+    ]
   }
 ])
 
