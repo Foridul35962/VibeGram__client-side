@@ -33,7 +33,7 @@ export const login = createAsyncThunk(
     async (data, { rejectWithValue }) => {
         try {
             const res = await axios.post(`${SERVER_URL}/login`, data,
-                {withCredentials: true}
+                { withCredentials: true }
             )
             return res.data
         } catch (error) {
@@ -80,10 +80,23 @@ export const resetPass = createAsyncThunk(
 
 export const resendOtp = createAsyncThunk(
     'auth/resendOtp',
-    async (data, {rejectWithValue})=>{
+    async (data, { rejectWithValue }) => {
         try {
             const res = await axios.patch(`${SERVER_URL}/resend-otp`, data)
             return res.data
+        } catch (error) {
+            return rejectWithValue(error?.response?.data || "Something went wrong")
+        }
+    }
+)
+
+export const logout = createAsyncThunk(
+    'auth/logout',
+    async (_, { rejectWithValue }) => {
+        try {
+            await axios.get(`${SERVER_URL}/logout`,
+                { withCredentials: true }
+            )
         } catch (error) {
             return rejectWithValue(error?.response?.data || "Something went wrong")
         }
