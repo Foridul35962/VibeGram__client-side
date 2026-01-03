@@ -39,7 +39,7 @@ const FirstLoad = () => {
       </div>
 
       {/* Custom Styles for Animation */}
-      <style jsx>{`
+      <style>{`
         @keyframes progress {
           0% { width: 0%; }
           50% { width: 70%; }
