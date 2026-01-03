@@ -82,7 +82,9 @@ const LeftHome = () => {
                     <div className='flex flex-col gap-5 mt-2'>
                         {suggestedUser.map((user, idx) => (
                             <div key={idx} className='flex justify-between items-center group'>
-                                <div className='flex gap-3 items-center cursor-pointer'>
+                                <div
+                                    onClick={() => navigate(`profile/${user.userName}`)}
+                                    className='flex gap-3 items-center cursor-pointer'>
                                     <div className='p-[1.5px] rounded-full bg-linear-to-tr from-yellow-400 via-orange-500 to-fuchsia-600'>
                                         <img
                                             src={user?.image?.url || avatar}
