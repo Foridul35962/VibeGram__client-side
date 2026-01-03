@@ -6,11 +6,10 @@ import { useDispatch, useSelector } from 'react-redux'
 import { logout } from '../stores/slice/authSlice'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
-import { getSuggestedUser } from '../stores/slice/userSlice'
+import { followUnfollow, getSuggestedUser } from '../stores/slice/userSlice'
 
 const LeftHome = () => {
     const { user, suggestedUser } = useSelector((state) => state.user)
-    console.log(suggestedUser)
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const handleLogout = async () => {
@@ -26,6 +25,14 @@ const LeftHome = () => {
     useEffect(() => {
         dispatch(getSuggestedUser())
     }, [])
+
+    const handleFollow = async (followingUserId) => {
+        try {
+            dispatch(followUnfollow({ followingUserId }))
+        } catch (error) {
+            console.log(error)
+        }
+    }
 
     return (
         <div className='w-1/4 hidden lg:flex flex-col gap-6 min-h-screen h-screen sticky top-0 p-6 border-r border-gray-800 bg-black'>
@@ -94,7 +101,9 @@ const LeftHome = () => {
                                     </div>
                                 </div>
 
-                                <button className='text-xs cursor-pointer font-bold text-blue-500 hover:text-white transition-colors duration-200'>
+                                <button
+                                    onClick={() => handleFollow(user?._id)}
+                                    className='text-xs cursor-pointer font-bold text-blue-500 hover:text-white transition-colors duration-200'>
                                     Follow
                                 </button>
                             </div>

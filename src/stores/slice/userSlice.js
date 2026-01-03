@@ -34,6 +34,20 @@ export const getSuggestedUser = createAsyncThunk(
     }
 )
 
+export const followUnfollow = createAsyncThunk(
+    'user/followUnfollow',
+    async(data, {rejectWithValue})=>{
+        try {
+            const res = await axios.patch(`${SERVER_URL}/followUnfollow`, data,
+                {withCredentials: true}
+            )
+            return res.data
+        } catch (error) {
+            return rejectWithValue(error?.response?.data || "Something went wrong")
+        }
+    }
+)
+
 const initialState = {
     userLoading: false,
     user: null,
@@ -80,6 +94,24 @@ const userSlice = createSlice({
                 state.suggestedUser = action.payload.data
             })
             .addCase(getSuggestedUser.rejected, (state) => {
+                state.userLoading = false
+            })
+        //follow unfollow user
+        builder
+            .addCase(followUnfollow.pending, (state) => {
+                state.userLoading = true
+            })
+            .addCase(followUnfollow.fulfilled, (state, action) => {
+                state.userLoading = false
+                const message = action.payload.message
+                const data = action.payload.data
+                if (message === 'unfollow') {
+                    state.user.followings = state.user.followings.filter(id=>id !== data)
+                } else {
+                    state.user.followings.push(data)
+                }
+            })
+            .addCase(followUnfollow.rejected, (state) => {
                 state.userLoading = false
             })
     }
