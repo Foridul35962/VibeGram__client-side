@@ -6,7 +6,7 @@ import RightHome from '../components/RightHome'
 
 const Home = () => {
   return (
-    <div className='w-full bg-black flex text-white px-5'>
+    <div className='w-full bg-black flex text-white px-0 sm:px-5'>
       <LeftHome />
       <Feed />
       <RightHome />

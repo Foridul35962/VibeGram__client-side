@@ -9,6 +9,7 @@ import ForgetPass from './pages/ForgetPass'
 import UseGetUser from './hooks/UseGetUser'
 import ProtectedRoutes from './routes/ProtectedRoutes'
 import PublicRoutes from './routes/PublicRoutes'
+import Profile from './pages/Profile'
 
 
 const router = createBrowserRouter([
@@ -22,6 +23,10 @@ const router = createBrowserRouter([
           {
             path: '/',
             element: <Home />
+          },
+          {
+            path: '/profile/:userName',
+            element: <Profile />
           },
         ]
       },
