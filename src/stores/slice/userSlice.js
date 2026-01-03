@@ -22,10 +22,10 @@ export const getUser = createAsyncThunk(
 
 export const getSuggestedUser = createAsyncThunk(
     'user/suggestedUser',
-    async (_, {rejectWithValue})=>{
+    async (_, { rejectWithValue }) => {
         try {
             const res = await axios.get(`${SERVER_URL}/suggestedUser`,
-                {withCredentials: true}
+                { withCredentials: true }
             )
             return res.data
         } catch (error) {
@@ -36,10 +36,38 @@ export const getSuggestedUser = createAsyncThunk(
 
 export const followUnfollow = createAsyncThunk(
     'user/followUnfollow',
-    async(data, {rejectWithValue})=>{
+    async (data, { rejectWithValue }) => {
         try {
             const res = await axios.patch(`${SERVER_URL}/followUnfollow`, data,
-                {withCredentials: true}
+                { withCredentials: true }
+            )
+            return res.data
+        } catch (error) {
+            return rejectWithValue(error?.response?.data || "Something went wrong")
+        }
+    }
+)
+
+export const fetchedUser = createAsyncThunk(
+    'user/fetchedUser',
+    async (userName, { rejectWithValue }) => {
+        try {
+            const res = await axios.get(`${SERVER_URL}/find-user/${userName}`,
+                { withCredentials: true }
+            )
+            return res.data
+        } catch (error) {
+            return rejectWithValue(error?.response?.data || "Something went wrong")
+        }
+    }
+)
+
+export const updateUserProfile = createAsyncThunk(
+    'user/updateProfile',
+    async (data, { rejectWithValue }) => {
+        try {
+            const res = await axios.patch(`${SERVER_URL}/updateUserProfile`, data,
+                { withCredentials: true }
             )
             return res.data
         } catch (error) {
@@ -52,6 +80,8 @@ const initialState = {
     userLoading: false,
     user: null,
     isFetched: false,
+    fetchedUserData: null,
+    userFetchLoading: false,
     suggestedUser: []
 }
 
@@ -67,7 +97,7 @@ const userSlice = createSlice({
             })
         //logout
         builder
-            .addCase(logout.fulfilled, (state)=>{
+            .addCase(logout.fulfilled, (state) => {
                 state.user = null
             })
         //get user
@@ -106,12 +136,36 @@ const userSlice = createSlice({
                 const message = action.payload.message
                 const data = action.payload.data
                 if (message === 'unfollow') {
-                    state.user.followings = state.user.followings.filter(id=>id !== data)
+                    state.user.followings = state.user.followings.filter(id => id !== data)
                 } else {
                     state.user.followings.push(data)
                 }
             })
             .addCase(followUnfollow.rejected, (state) => {
+                state.userLoading = false
+            })
+        //find user
+        builder
+            .addCase(fetchedUser.pending, (state) => {
+                state.userFetchLoading = true
+                state.fetchedUserData = null
+            })
+            .addCase(fetchedUser.fulfilled, (state, action) => {
+                state.userFetchLoading = false
+                state.fetchedUserData = action.payload.data
+            })
+            .addCase(fetchedUser.rejected, (state) => {
+                state.userFetchLoading = false
+            })
+        //update user profile
+        builder
+            .addCase(updateUserProfile.pending, (state) => {
+                state.userLoading = true
+            })
+            .addCase(updateUserProfile.fulfilled, (state) => {
+                state.userLoading = false
+            })
+            .addCase(updateUserProfile.rejected, (state) => {
                 state.userLoading = false
             })
     }
