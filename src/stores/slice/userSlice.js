@@ -162,8 +162,10 @@ const userSlice = createSlice({
             .addCase(updateUserProfile.pending, (state) => {
                 state.userLoading = true
             })
-            .addCase(updateUserProfile.fulfilled, (state) => {
+            .addCase(updateUserProfile.fulfilled, (state, action) => {
                 state.userLoading = false
+                console.log(action.payload.data)
+                state.user = action.payload.data
             })
             .addCase(updateUserProfile.rejected, (state) => {
                 state.userLoading = false

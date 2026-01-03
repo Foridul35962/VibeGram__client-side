@@ -10,6 +10,7 @@ import UseGetUser from './hooks/UseGetUser'
 import ProtectedRoutes from './routes/ProtectedRoutes'
 import PublicRoutes from './routes/PublicRoutes'
 import Profile from './pages/Profile'
+import UpdateProfile from './pages/UpdateProfile'
 
 
 const router = createBrowserRouter([
@@ -27,6 +28,10 @@ const router = createBrowserRouter([
           {
             path: '/profile/:userName',
             element: <Profile />
+          },
+          {
+            path: '/update-profile',
+            element: <UpdateProfile />
           },
         ]
       },
