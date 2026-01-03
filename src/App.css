@@ -1,1 +1,22 @@
 @import "tailwindcss";
+
+/* Universal Scrollbar Hide */
+@layer base {
+  html, body {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+*::-webkit-scrollbar {
+  display: none;
+}
