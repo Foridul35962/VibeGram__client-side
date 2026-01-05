@@ -14,7 +14,6 @@ export const getUser = createAsyncThunk(
             )
             return res.data
         } catch (error) {
-            console.log(error)
             return rejectWithValue(error?.response?.data || "Something went wrong")
         }
     }
