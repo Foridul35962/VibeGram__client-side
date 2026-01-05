@@ -11,6 +11,7 @@ import ProtectedRoutes from './routes/ProtectedRoutes'
 import PublicRoutes from './routes/PublicRoutes'
 import Profile from './pages/Profile'
 import UpdateProfile from './pages/UpdateProfile'
+import UploadAllPost from './pages/UploadAllPost'
 
 
 const router = createBrowserRouter([
@@ -32,6 +33,10 @@ const router = createBrowserRouter([
           {
             path: '/update-profile',
             element: <UpdateProfile />
+          },
+          {
+            path: '/upload-post',
+            element: <UploadAllPost />
           },
         ]
       },
