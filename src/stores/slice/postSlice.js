@@ -49,9 +49,9 @@ export const getPost = createAsyncThunk(
 
 export const getUserPosts = createAsyncThunk(
     'post/getAllPost',
-    async (_, { rejectWithValue }) => {
+    async (userId, { rejectWithValue }) => {
         try {
-            const res = await axios.get(`${SERVER_URL}/user-post`, {
+            const res = await axios.get(`${SERVER_URL}/user-post/${userId}`, {
                 withCredentials: true
             })
             return res.data
@@ -105,26 +105,58 @@ export const commentPost = createAsyncThunk(
 const initialState = {
     postLoading: false,
     post: null,
-    allPost: []
+    allPost: [],
+    userPosts: [],
+    prevFetchedUserId: null
 }
 
 const postSlice = createSlice({
     name: 'post',
     initialState,
-    reducers:{},
-    extraReducers:(builder)=>{
+    reducers: {
+        setPrevFetchedUserId: (state, action) => {
+            state.prevFetchedUserId = action.payload
+        }
+    },
+    extraReducers: (builder) => {
         //uploadpost
         builder
-            .addCase(uploadPost.pending,(state)=>{
+            .addCase(uploadPost.pending, (state) => {
                 state.postLoading = true
             })
-            .addCase(uploadPost.fulfilled, (state)=>{
+            .addCase(uploadPost.fulfilled, (state) => {
+                state.postLoading = false
+                state.prevFetchedUserId = null
+            })
+            .addCase(uploadPost.rejected, (state) => {
                 state.postLoading = false
             })
-            .addCase(uploadPost.rejected, (state)=>{
+        //get users posts
+        builder
+            .addCase(getUserPosts.pending, (state) => {
+                state.postLoading = true
+            })
+            .addCase(getUserPosts.fulfilled, (state, action) => {
+                state.postLoading = false
+                state.userPosts = action.payload.data
+            })
+            .addCase(getUserPosts.rejected, (state) => {
+                state.postLoading = false
+            })
+        //get post
+        builder
+            .addCase(getPost.pending, (state) => {
+                state.postLoading = true
+            })
+            .addCase(getPost.fulfilled, (state, action) => {
+                state.postLoading = false
+                state.post = action.payload.data
+            })
+            .addCase(getPost.rejected, (state) => {
                 state.postLoading = false
             })
     }
 })
 
+export const { setPrevFetchedUserId } = postSlice.actions
 export default postSlice.reducer
