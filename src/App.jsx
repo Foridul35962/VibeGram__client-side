@@ -12,6 +12,7 @@ import PublicRoutes from './routes/PublicRoutes'
 import Profile from './pages/Profile'
 import UpdateProfile from './pages/UpdateProfile'
 import UploadAllPost from './pages/UploadAllPost'
+import Post from './pages/Post'
 
 
 const router = createBrowserRouter([
@@ -37,6 +38,10 @@ const router = createBrowserRouter([
           {
             path: '/upload-post',
             element: <UploadAllPost />
+          },
+          {
+            path: '/post/:postId',
+            element: <Post />
           },
         ]
       },
