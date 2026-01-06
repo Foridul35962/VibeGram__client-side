@@ -29,7 +29,7 @@ const UploadPost = () => {
 
   const removeImage = (index) => {
     setImages(images.filter((_, i) => i !== index));
-    
+
     setFile((prev) => {
       if (Array.isArray(prev)) {
         return prev.filter((_, i) => i !== index);
@@ -86,7 +86,7 @@ const UploadPost = () => {
                       <label className='aspect-square rounded-2xl bg-zinc-900 flex flex-col items-center justify-center cursor-pointer hover:bg-zinc-800 transition border-2 border-dashed border-zinc-800 group'>
                         <ImagePlus size={28} className='text-zinc-500 group-hover:text-white transition' />
                         <span className='text-[10px] text-zinc-500 mt-2 font-bold uppercase tracking-widest'>Add More</span>
-                        <input type="file" multiple hidden onChange={handleImageChange} accept="image/*, video/*" />
+                        <input type="file" multiple hidden onChange={handleImageChange} accept="image/*" />
                       </label>
                     )}
                   </div>
@@ -98,7 +98,7 @@ const UploadPost = () => {
                     </div>
                     <p className='mt-6 text-xl font-medium'>Drop your photos here</p>
                     <p className='text-zinc-500 text-sm mt-1'>High quality images recommended</p>
-                    <input type="file" multiple hidden onChange={handleImageChange} accept="image/*, video/*" />
+                    <input type="file" multiple hidden onChange={handleImageChange} accept="image/*" />
                   </label>
                 )}
               </div>
