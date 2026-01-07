@@ -1,21 +1,65 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { useParams, Link } from 'react-router-dom'
-import { getPost } from '../stores/slice/postSlice'
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useParams, Link, useNavigate } from 'react-router-dom'
+import { commentPost, deletePost, getPost, likedUnlikedPost, savedUnsavedPosts } from '../stores/slice/postSlice'
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Loader2, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import avatar from '../assets/avatar.png'
 import PostLoading from '../components/loading/PostLoading'
 import PostNotFound from '../components/not found/PostNotFound'
+import { toast } from 'react-toastify'
 
 const Post = () => {
     const dispatch = useDispatch()
+    const navigate = useNavigate()
     const { postId } = useParams()
-    const { post, postLoading } = useSelector((state) => state.post)
+    const { post, postLoading, commentLoading } = useSelector((state) => state.post)
+    const { user } = useSelector((state) => state.user)
     const [currentIndex, setCurrentIndex] = useState(0)
+    const [message, setMessage] = useState('')
+    const [showMessage, setShowMessage] = useState(false)
+    const [showLikeUser, setShowLikeUser] = useState(false)
+    const [showDeleteMenu, setShowDeleteMenu] = useState(false)
 
     useEffect(() => {
         dispatch(getPost(postId))
     }, [postId, dispatch])
+
+    const handleDeletePost = async () => {
+        if (window.confirm('Are you want to delete this post?')) {
+            try {
+                await dispatch(deletePost({ postId })).unwrap()
+                toast.success('Post Deleted')
+                navigate(`/profile/${user.userName}`)
+            } catch (error) {
+                toast.error(error.message)
+            }
+        }
+    }
+
+    const handleCommentPost = async () => {
+        try {
+            await dispatch(commentPost({ postId, message })).unwrap()
+            setMessage('')
+        } catch (error) {
+            toast.error(error.message)
+        }
+    }
+
+    const handleLikePost = async () => {
+        try {
+            await dispatch(likedUnlikedPost({ postId })).unwrap()
+        } catch (error) {
+            toast.error(error.message)
+        }
+    }
+
+    const handlesavedPost = async () => {
+        try {
+            await dispatch(savedUnsavedPosts({ postId })).unwrap()
+        } catch (error) {
+            toast.error(error.message)
+        }
+    }
 
     const nextImage = () => {
         if (currentIndex < post.media.length - 1) {
@@ -39,7 +83,7 @@ const Post = () => {
 
     return (
         <div className='w-full min-h-screen bg-black text-white p-0 md:p-10 flex items-center justify-center'>
-            <div className='w-full mb-20 max-w-6xl bg-black border border-zinc-900 md:rounded-sm flex flex-col md:flex-row h-full md:h-[85vh]'>
+            <div className='w-full relative mb-20 max-w-6xl bg-black border border-zinc-900 md:rounded-sm flex flex-col md:flex-row h-full md:h-[85vh]'>
 
                 {/* Left Side: Image Carousel */}
                 <div className='flex md:hidden p-4 border-b border-zinc-900 items-center justify-between'>
@@ -49,7 +93,27 @@ const Post = () => {
                         </div>
                         <span className='font-bold text-sm group-hover:text-zinc-400 transition'>{post.author?.userName}</span>
                     </Link>
-                    <MoreHorizontal className='cursor-pointer text-zinc-400 hover:text-white transition' size={20} />
+                    {
+                        user?.userName === post?.author?.userName &&
+                        <div className='relative inline-block'>
+                            <MoreHorizontal
+                                onClick={() => setShowDeleteMenu(!showDeleteMenu)}
+                                className='cursor-pointer text-zinc-400 hover:text-white transition' size={20} />
+                            {
+                                showDeleteMenu &&
+                                <>
+                                    <div className='fixed inset-0 z-40' onClick={() => setShowDeleteMenu(!showDeleteMenu)} />
+                                    <div className='absolute w-40 right-0 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 animate-in fade-in slide-in-from-bottom-2 duration-200'>
+                                        <button
+                                            onClick={handleDeletePost}
+                                            className='w-full cursor-pointer text-left px-4 py-2 text-sm text-red-500 rounded-xl hover:bg-zinc-700 transition'>
+                                            Delete Post
+                                        </button>
+                                    </div>
+                                </>
+                            }
+                        </div>
+                    }
                 </div>
                 <div className='w-full md:w-[60%] bg-zinc-950 flex items-center justify-center relative group overflow-hidden border-r border-zinc-900'>
                     {/* Media Display */}
@@ -101,7 +165,27 @@ const Post = () => {
                             </div>
                             <span className='font-bold text-sm group-hover:text-zinc-400 transition'>{post.author?.userName}</span>
                         </Link>
-                        <MoreHorizontal className='cursor-pointer text-zinc-400 hover:text-white transition' size={20} />
+                        {
+                            user?.userName === post?.author?.userName &&
+                            <div className='relative inline-block'>
+                                <MoreHorizontal
+                                    onClick={() => setShowDeleteMenu(!showDeleteMenu)}
+                                    className='cursor-pointer text-zinc-400 hover:text-white transition' size={20} />
+                                {
+                                    showDeleteMenu &&
+                                    <>
+                                        <div className='fixed inset-0 z-40' onClick={() => setShowDeleteMenu(!showDeleteMenu)} />
+                                        <div className='absolute w-40 right-0 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 animate-in fade-in slide-in-from-bottom-2 duration-200'>
+                                            <button
+                                                onClick={handleDeletePost}
+                                                className='w-full cursor-pointer text-left px-4 py-2 text-sm text-red-500 rounded-xl hover:bg-zinc-700 transition'>
+                                                Delete Post
+                                            </button>
+                                        </div>
+                                    </>
+                                }
+                            </div>
+                        }
                     </div>
 
                     {/* Scrollable Caption & Comments Area */}
@@ -148,7 +232,7 @@ const Post = () => {
                                                     >
                                                         {comment.author?.userName}
                                                     </Link>
-                                                    <span className='text-zinc-300'>{comment.comment}</span>
+                                                    <span className='text-zinc-300'>{comment.message}</span>
                                                 </p>
                                             </div>
                                         </div>
@@ -162,26 +246,71 @@ const Post = () => {
                     <div className='p-4 border-t border-zinc-900 space-y-3'>
                         <div className='flex items-center justify-between'>
                             <div className='flex items-center gap-4'>
-                                <Heart className='hover:text-zinc-500 transition cursor-pointer' size={24} />
-                                <MessageCircle className='hover:text-zinc-500 transition cursor-pointer' size={24} />
+                                <div onClick={handleLikePost} className="cursor-pointer">
+                                    {post.likes.find(like => like?._id === user?._id) ? (
+                                        <Heart className='text-red-500 fill-red-500 transition' size={24} />
+                                    ) : (
+                                        <Heart className='hover:text-zinc-500 text-white transition' size={24} />
+                                    )}
+                                </div>
+                                <MessageCircle
+                                    onClick={() => setShowMessage(!showMessage)}
+                                    className='hover:text-zinc-500 transition cursor-pointer' size={24} />
                                 {/* <Send className='hover:text-zinc-500 transition cursor-pointer' size={24} /> */}
                             </div>
-                            <Bookmark className='hover:text-zinc-500 transition cursor-pointer' size={24} />
+                            <div onClick={handlesavedPost} className="cursor-pointer">
+                                {user.savedPosts.includes(post?._id) ? (
+                                    <Bookmark className='text-white fill-white transition' size={24} />
+                                ) : (
+                                    <Bookmark className='hover:text-zinc-500 transition cursor-pointer' size={24} />
+                                )}
+                            </div>
                         </div>
-                        <p className='text-sm font-bold'>{post.likes?.length || 0} likes</p>
+                        <div className='relative inline-block mb-2'>
+                            <p onClick={() => setShowLikeUser(!showLikeUser)} className='text-sm font-bold cursor-pointer hover:underline'>
+                                {post.likes?.length || 0} likes
+                            </p>
+                            {showLikeUser && (
+                                <>
+                                    <div className='fixed inset-0 z-40' onClick={() => setShowLikeUser(false)} />
+                                    <div className='absolute bottom-full left-0 mb-2 w-64 max-h-60 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-bottom-2 duration-200'>
+                                        <div className='p-2 border-b border-zinc-800 flex justify-between items-center sticky top-0 bg-zinc-900'>
+                                            <span className='text-[10px] font-black uppercase text-zinc-500 px-2'>Liked by</span>
+                                            <X size={14} className='cursor-pointer' onClick={() => setShowLikeUser(false)} />
+                                        </div>
+                                        {post.likes.map(lu => (
+                                            <Link key={lu._id} to={`/profile/${lu.userName}`} className='flex items-center gap-3 p-2.5 hover:bg-zinc-800 transition'>
+                                                <img src={lu.image?.url || avatar} className='size-8 rounded-full object-cover' />
+                                                <span className='text-xs font-bold'>{lu.userName}</span>
+                                            </Link>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
+                        </div>
 
                         {/* Inline Comment Input */}
-                        <div className='flex items-center gap-2 pt-2'>
-                            <input
-                                type="text"
-                                placeholder="Add a comment..."
-                                className='w-full py-1 px-2 bg-transparent border-none text-sm focus:ring-0 placeholder:text-zinc-600'
-                            />
-                            <button className='text-blue-500 text-sm font-bold opacity-50 hover:opacity-100 cursor-pointer'>Post</button>
-                        </div>
+                        {
+                            showMessage &&
+                            <div className='flex items-center gap-2 pt-2'>
+                                <input
+                                    type="text"
+                                    value={message}
+                                    onChange={(e) => setMessage(e.target.value)}
+                                    placeholder="Add a comment..."
+                                    className='w-full py-1 px-2 bg-transparent border-none text-sm focus:ring-0 placeholder:text-zinc-600'
+                                />
+                                <button
+                                    onClick={handleCommentPost}
+                                    disabled={commentLoading || message === ''}
+                                    className='text-blue-500 text-sm font-bold disabled:cursor-not-allowed opacity-50 hover:opacity-100 cursor-pointer'
+                                >
+                                    {commentLoading ? 'Wait' : 'Comment'}
+                                </button>
+                            </div>
+                        }
                     </div>
                 </div>
-
             </div>
         </div>
     )
