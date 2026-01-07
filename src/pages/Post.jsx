@@ -307,10 +307,19 @@ const Post = () => {
                                 />
                                 <button
                                     onClick={handleCommentPost}
-                                    disabled={commentLoading || message === ''}
-                                    className='text-blue-500 text-sm font-bold disabled:cursor-not-allowed opacity-50 hover:opacity-100 cursor-pointer'
-                                >
-                                    {commentLoading ? 'Wait' : 'Comment'}
+                                    disabled={commentLoading || message.trim() === ''}
+                                    className='flex items-center justify-center p-2 rounded-full transition-all duration-200  disabled:opacity-30 disabled:cursor-not-allowed group' >
+                                    {commentLoading ? (
+                                        <Loader2
+                                            size={20}
+                                            className='animate-spin text-zinc-500 cursor-not-allowed'
+                                        />
+                                    ) : (
+                                        <Send
+                                            size={22}
+                                            className={`transition-transform cursor-pointer duration-200  ${message.trim() !== '' ? 'text-blue-500 scale-110 rotate-[-10deg] group-hover:translate-x-0.5 group-hover:-translate-y-0.5' : 'text-zinc-600' }`}
+                                        />
+                                    )}
                                 </button>
                             </div>
                         }
