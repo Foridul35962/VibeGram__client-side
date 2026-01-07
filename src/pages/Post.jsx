@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { commentPost, deletePost, getPost, likedUnlikedPost, savedUnsavedPosts } from '../stores/slice/postSlice'
+import { commentPost, deletePost, getPost, likedUnlikedPost, likeOptimisticSingle, likeRollbackSingle, savedUnsavedPosts } from '../stores/slice/postSlice'
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Loader2, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import avatar from '../assets/avatar.png'
 import PostLoading from '../components/loading/PostLoading'
@@ -19,6 +19,8 @@ const Post = () => {
     const [showMessage, setShowMessage] = useState(false)
     const [showLikeUser, setShowLikeUser] = useState(false)
     const [showDeleteMenu, setShowDeleteMenu] = useState(false)
+    const likesArr = Array.isArray(post?.likes) ? post.likes : [];
+    const isLiked = likesArr.some(like => String(like?._id ?? like) === String(user?._id));
 
     useEffect(() => {
         dispatch(getPost(postId))
@@ -46,9 +48,12 @@ const Post = () => {
     }
 
     const handleLikePost = async () => {
+        const prevLikes = Array.isArray(post.likes) ? [...post.likes] : [];
+        dispatch(likeOptimisticSingle(user));
         try {
             await dispatch(likedUnlikedPost({ postId })).unwrap()
         } catch (error) {
+            dispatch(likeRollbackSingle(prevLikes));
             toast.error(error.message)
         }
     }
@@ -212,8 +217,8 @@ const Post = () => {
                                 </div>
                             ) : (
                                 <div className='space-y-6'>
-                                    {post.comments.map((comment) => (
-                                        <div key={comment._id} className='flex gap-3 items-start group'>
+                                    {post.comments.map((comment, idx) => (
+                                        <div key={idx} className='flex gap-3 items-start group'>
                                             {/* Commenter Avatar */}
                                             <Link to={`/profile/${comment.author?.userName}`} className='shrink-0'>
                                                 <img
@@ -247,7 +252,7 @@ const Post = () => {
                         <div className='flex items-center justify-between'>
                             <div className='flex items-center gap-4'>
                                 <div onClick={handleLikePost} className="cursor-pointer">
-                                    {post.likes.find(like => like?._id === user?._id) ? (
+                                    {isLiked ? (
                                         <Heart className='text-red-500 fill-red-500 transition' size={24} />
                                     ) : (
                                         <Heart className='hover:text-zinc-500 text-white transition' size={24} />
@@ -317,7 +322,7 @@ const Post = () => {
                                     ) : (
                                         <Send
                                             size={22}
-                                            className={`transition-transform cursor-pointer duration-200  ${message.trim() !== '' ? 'text-blue-500 scale-110 rotate-[-10deg] group-hover:translate-x-0.5 group-hover:-translate-y-0.5' : 'text-zinc-600' }`}
+                                            className={`transition-transform cursor-pointer duration-200  ${message.trim() !== '' ? 'text-blue-500 scale-110 rotate-[-10deg] group-hover:translate-x-0.5 group-hover:-translate-y-0.5' : 'text-zinc-600'}`}
                                         />
                                     )}
                                 </button>

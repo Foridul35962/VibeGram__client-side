@@ -102,6 +102,17 @@ export const commentPost = createAsyncThunk(
     }
 )
 
+const toggleLike = (likes, user) => {
+    const uid = String(user?._id);
+    const arr = Array.isArray(likes) ? likes : [];
+
+    const already = arr.some(l => String(l?._id ?? l) === uid);
+
+    if (already) return arr.filter(l => String(l?._id ?? l) !== uid);
+
+    return [...arr, user];
+};
+
 const initialState = {
     postLoading: false,
     post: null,
@@ -117,7 +128,17 @@ const postSlice = createSlice({
     reducers: {
         setPrevFetchedUserId: (state, action) => {
             state.prevFetchedUserId = action.payload
-        }
+        },
+        likeOptimisticSingle: (state, action) => {
+            const user = action.payload;
+            if (!state.post) return;
+            state.post.likes = toggleLike(state.post.likes, user);
+        },
+        likeRollbackSingle: (state, action) => {
+            const prevLikes = action.payload;
+            if (!state.post) return;
+            state.post.likes = prevLikes;
+        },
     },
     extraReducers: (builder) => {
         //uploadpost
@@ -175,13 +196,18 @@ const postSlice = createSlice({
             })
             .addCase(commentPost.fulfilled, (state, action) => {
                 state.commentLoading = false
-                state.post.comments.push(action.payload.data.message)
+                state.post.comments.push(action.payload.data.comment)
             })
             .addCase(commentPost.rejected, (state) => {
                 state.commentLoading = false
             })
+        //like unlike
+        builder
+            .addCase(likedUnlikedPost.fulfilled, (state, action) => {
+                state.post.likes = action.payload.data.postLikes
+            })
     }
 })
 
-export const { setPrevFetchedUserId } = postSlice.actions
+export const { setPrevFetchedUserId, likeOptimisticSingle, likeRollbackSingle } = postSlice.actions
 export default postSlice.reducer
