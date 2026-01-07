@@ -1,16 +1,37 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Settings, Grid, Bookmark, SquareUser } from 'lucide-react';
 import avatar from '../assets/avatar.png'
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchedUser } from '../stores/slice/userSlice';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import ProfileLoad from '../components/loading/ProfileLoad';
 import ProfileNotFound from '../components/not found/ProfileNotFound';
+import UserPosts from '../components/UserPosts';
+import UserSavedPosts from '../components/UserSavedPosts';
+import UserReels from '../components/UserReels';
+import { logout } from '../stores/slice/authSlice';
+import { toast } from 'react-toastify';
 
 const Profile = () => {
     const { fetchedUserData, user, userFetchLoading } = useSelector((state) => state.user)
     const dispatch = useDispatch()
+    const navigate = useNavigate()
     const { userName } = useParams()
+    const [showGrid, setShowGrid] = useState('posts')
+    const [showLogout, setShowLogout] = useState(false)
+
+    const handleLogOut = async () => {
+        if (window.confirm('Are you want to Logged Out?')) {
+            try {
+                await dispatch(logout()).unwrap()
+                toast.success('Log out successfully')
+                navigate('/login')
+            } catch (error) {
+                toast.error(error.message)
+            }
+        }
+    }
+
     useEffect(() => {
         dispatch(fetchedUser(userName))
     }, [userName, dispatch])
@@ -44,21 +65,41 @@ const Profile = () => {
                                         {
                                             fetchedUserData?._id === user?._id &&
                                             <div className='flex gap-2'>
-                                                <button className='bg-zinc-800 hover:bg-zinc-700 px-5 py-1.5 rounded-lg text-sm font-semibold transition'>
+                                                <button
+                                                    onClick={() => navigate('/update-profile')}
+                                                    className='bg-zinc-800 cursor-pointer hover:bg-zinc-700 px-5 py-1.5 rounded-lg text-sm font-semibold transition'>
                                                     Edit Profile
                                                 </button>
-                                                <button className='bg-zinc-800 hover:bg-zinc-700 p-2 rounded-lg transition'>
-                                                    <Settings size={18} />
-                                                </button>
+                                                <div className='relative inline-block'>
+                                                    <button
+                                                        onClick={() => setShowLogout(!showLogout)}
+                                                        className='bg-zinc-800 cursor-pointer hover:bg-zinc-700 p-2 rounded-lg transition'>
+                                                        <Settings size={18} />
+                                                    </button>
+                                                    {
+                                                        showLogout &&
+                                                        <div className='absulate right-0'>
+                                                            <div className='fixed inset-0 z-40' onClick={() => setShowLogout(!showLogout)} />
+                                                            <div className='absolute w-40 right-0 -bottom-12 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 animate-in fade-in slide-in-from-bottom-2 duration-200'>
+                                                                <button
+                                                                    onClick={handleLogOut}
+                                                                    className='w-full cursor-pointer text-left px-4 py-2 text-sm text-red-500 rounded-xl hover:bg-zinc-700 transition'>
+                                                                    Log Out
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    }
+
+                                                </div>
                                             </div>
                                         }
                                     </div>
 
                                     {/* Stats for Desktop */}
                                     <div className='hidden md:flex gap-10'>
-                                        <div><span className='font-bold'>{fetchedUserData?.posts.length}</span> posts</div>
+                                        <div><span className='font-bold'>{fetchedUserData?.posts?.length}</span> posts</div>
                                         <div><span className='font-bold'>0</span> followers</div>
-                                        <div><span className='font-bold'>{fetchedUserData?.followings.length}</span> following</div>
+                                        <div><span className='font-bold'>{fetchedUserData?.followings?.length}</span> following</div>
                                     </div>
 
                                     {/* Bio */}
@@ -72,7 +113,7 @@ const Profile = () => {
                                                 fetchedUserData?.gender &&
                                                 <>
                                                     <div className='border-2 h-5' />
-                                                    <p className='text-white text-sm'>{fetchedUserData?.gender}</p>
+                                                    <p className='text-white text-sm uppercase'>{fetchedUserData?.gender}</p>
                                                 </>
                                             }
                                         </div>
@@ -92,31 +133,43 @@ const Profile = () => {
 
                                 {/* Tabs Navigation */}
                                 <div className='flex justify-center gap-5 sm:gap-12 border-b border-zinc-900/50 *:cursor-pointer'>
-                                    <button className='flex items-center gap-2 py-4 border-t border-white -mt-px text-xs font-bold uppercase tracking-widest'>
+
+                                    {/* Posts Tab */}
+                                    <button
+                                        onClick={() => setShowGrid('posts')}
+                                        className={`flex items-center gap-2 py-4 border-t-2 -mt-px text-xs font-bold uppercase tracking-widest transition-all duration-300 ease-in-out ${showGrid === 'posts' ? 'border-white text-white' : 'border-transparent text-zinc-500 hover:text-white'}`}
+                                    >
                                         <Grid size={16} /> Posts
                                     </button>
-                                    <button className='flex items-center gap-2 py-4 text-zinc-500 text-xs font-bold uppercase tracking-widest hover:text-white transition'>
-                                        <Bookmark size={16} /> Saved
+
+                                    {/* Saved Tab (Conditional) */}
+                                    {fetchedUserData?._id === user?._id && (
+                                        <button
+                                            onClick={() => setShowGrid('saved')}
+                                            className={`flex items-center gap-2 py-4 border-t-2 -mt-px text-xs font-bold uppercase tracking-widest transition-all duration-300 ease-in-out ${showGrid === 'saved' ? 'border-white text-white' : 'border-transparent text-zinc-500 hover:text-white'}`}
+                                        >
+                                            <Bookmark size={16} /> Saved
+                                        </button>
+                                    )}
+
+                                    {/* Photos Tab */}
+                                    <button
+                                        onClick={() => setShowGrid('reels')}
+                                        className={`flex items-center gap-2 py-4 border-t-2 -mt-px text-xs font-bold uppercase tracking-widest transition-all duration-300 ease-in-out ${showGrid === 'reels' ? 'border-white text-white' : 'border-transparent text-zinc-500 hover:text-white'}`} >
+                                        <SquareUser size={16} /> Reels
                                     </button>
-                                    <button className='flex items-center gap-2 py-4 text-zinc-500 text-xs font-bold uppercase tracking-widest hover:text-white transition'>
-                                        <SquareUser size={16} /> Photo
-                                    </button>
+
                                 </div>
 
                                 {/* Grid Content */}
                                 <div className='p-1 md:p-4'>
-                                    {fetchedUserData?.posts.length === 0 ? (
-                                        <div className='flex flex-col items-center justify-center py-24 text-zinc-600'>
-                                            <div className='size-20 rounded-full border-2 border-zinc-800 flex items-center justify-center mb-4'>
-                                                <Grid size={40} strokeWidth={1} />
-                                            </div>
-                                            <h3 className='text-2xl font-black text-zinc-400'>NO POSTS YET</h3>
-                                        </div>
-                                    ) : (
-                                        <div className='grid grid-cols-3 gap-1 md:gap-6'>
-                                            {/* Posts mapping goes here */}
-                                        </div>
-                                    )}
+                                    {
+                                        showGrid === 'posts' ?
+                                            <UserPosts fetchedUserId={fetchedUserData?._id} /> :
+                                            showGrid === 'saved' ?
+                                                <UserSavedPosts posts={fetchedUserData?.savedPosts} /> :
+                                                <UserReels fetchedUserId={fetchedUserData?._id} />
+                                    }
                                 </div>
                             </div>
 

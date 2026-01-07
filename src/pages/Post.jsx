@@ -258,13 +258,18 @@ const Post = () => {
                                     className='hover:text-zinc-500 transition cursor-pointer' size={24} />
                                 {/* <Send className='hover:text-zinc-500 transition cursor-pointer' size={24} /> */}
                             </div>
-                            <div onClick={handlesavedPost} className="cursor-pointer">
-                                {user.savedPosts.includes(post?._id) ? (
-                                    <Bookmark className='text-white fill-white transition' size={24} />
-                                ) : (
-                                    <Bookmark className='hover:text-zinc-500 transition cursor-pointer' size={24} />
-                                )}
-                            </div>
+
+                            {/* save post */}
+                            {
+                                post?.author?.userName !== user.userName &&
+                                <div onClick={handlesavedPost} className="cursor-pointer">
+                                    {user.savedPosts.includes(post?._id) ? (
+                                        <Bookmark className='text-white fill-white transition' size={24} />
+                                    ) : (
+                                        <Bookmark className='hover:text-zinc-500 transition cursor-pointer' size={24} />
+                                    )}
+                                </div>
+                            }
                         </div>
                         <div className='relative inline-block mb-2'>
                             <p onClick={() => setShowLikeUser(!showLikeUser)} className='text-sm font-bold cursor-pointer hover:underline'>
