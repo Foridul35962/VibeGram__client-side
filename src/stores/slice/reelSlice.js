@@ -92,13 +92,19 @@ export const commentReel = createAsyncThunk(
 const initialState = {
     reelLoading: false,
     reel: null,
-    allReels: []
+    allReels: [],
+    userReel: [],
+    prevFetchedUserId: null
 }
 
 const reelSlice = createSlice({
     name: 'reel',
     initialState,
-    reducers:{},
+    reducers:{
+        setPrevFetchedUserId:(state, action)=>{
+            state.prevFetchedUserId = action.payload
+        }
+    },
     extraReducers:(builder)=>{
         //upload reel
         builder
@@ -107,11 +113,25 @@ const reelSlice = createSlice({
             })
             .addCase(uploadReel.fulfilled, (state)=>{
                 state.reelLoading = false
+                state.prevFetchedUserId = null
             })
             .addCase(uploadReel.rejected, (state)=>{
+                state.reelLoading = false
+            })
+        //get user all reels
+        builder
+            .addCase(getUserAllReels.pending,(state)=>{
+                state.reelLoading = true
+            })
+            .addCase(getUserAllReels.fulfilled, (state, action)=>{
+                state.reelLoading = false
+                state.userReel = action.payload.data
+            })
+            .addCase(getUserAllReels.rejected, (state)=>{
                 state.reelLoading = false
             })
     }
 })
 
+export const {setPrevFetchedUserId} = reelSlice.actions
 export default reelSlice.reducer
