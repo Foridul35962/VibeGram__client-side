@@ -13,12 +13,14 @@ const LeftHome = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const handleLogout = async () => {
-        try {
-            await dispatch(logout()).unwrap()
-            toast.success('Log out successfully')
-            navigate('/login')
-        } catch (error) {
-            toast.error(error.message)
+        if (window.confirm('Are you want to Logged Out?')) {
+            try {
+                await dispatch(logout()).unwrap()
+                toast.success('Log out successfully')
+                navigate('/login')
+            } catch (error) {
+                toast.error(error.message)
+            }
         }
     }
 
