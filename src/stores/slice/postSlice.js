@@ -107,7 +107,8 @@ const initialState = {
     post: null,
     allPost: [],
     userPosts: [],
-    prevFetchedUserId: null
+    prevFetchedUserId: null,
+    commentLoading: false
 }
 
 const postSlice = createSlice({
@@ -154,6 +155,30 @@ const postSlice = createSlice({
             })
             .addCase(getPost.rejected, (state) => {
                 state.postLoading = false
+            })
+        //delete post
+        builder
+            .addCase(deletePost.pending, (state) => {
+                state.postLoading = true
+            })
+            .addCase(deletePost.fulfilled, (state) => {
+                state.postLoading = false
+                state.prevFetchedUserId = null
+            })
+            .addCase(deletePost.rejected, (state) => {
+                state.postLoading = false
+            })
+        //comment on post
+        builder
+            .addCase(commentPost.pending, (state) => {
+                state.commentLoading = true
+            })
+            .addCase(commentPost.fulfilled, (state, action) => {
+                state.commentLoading = false
+                state.post.comments.push(action.payload.data.message)
+            })
+            .addCase(commentPost.rejected, (state) => {
+                state.commentLoading = false
             })
     }
 })
