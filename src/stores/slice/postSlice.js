@@ -113,13 +113,33 @@ const toggleLike = (likes, user) => {
     return [...arr, user];
 };
 
+export const fetchPosts = createAsyncThunk(
+    'post/fetchPosts',
+    async({page, limit}, {rejectWithValue})=>{
+        try {
+            const res = await axios.get(`${SERVER_URL}/get-allPost?page=${page}&limit=${limit}`,{
+                withCredentials: true
+            })
+            return res.data.data
+        } catch (error) {
+            return rejectWithValue(error?.response?.data || "Something went wrong")
+        }
+    }
+)
+
 const initialState = {
     postLoading: false,
     post: null,
-    allPost: [],
     userPosts: [],
     prevFetchedUserId: null,
-    commentLoading: false
+    commentLoading: false,
+    items: [],  //fetch feed post
+    page:1,
+    limit:20,
+    total:0,
+    hasMore: true,
+    loading: false,
+    error: null
 }
 
 const postSlice = createSlice({
@@ -139,6 +159,14 @@ const postSlice = createSlice({
             if (!state.post) return;
             state.post.likes = prevLikes;
         },
+        resetPosts:(state)=>{
+            state.items = []
+            state.page = 1
+            state.total = 0
+            state.hasMore = true
+            state.loading = false
+            state.error = null
+        }
     },
     extraReducers: (builder) => {
         //uploadpost
@@ -206,8 +234,32 @@ const postSlice = createSlice({
             .addCase(likedUnlikedPost.fulfilled, (state, action) => {
                 state.post.likes = action.payload.data.postLikes
             })
+        //fetch all post for feed
+        builder
+            .addCase(fetchPosts.pending, (state)=>{
+                state.loading = true
+            })
+            .addCase(fetchPosts.fulfilled, (state, action)=>{
+                state.loading = false
+                const {posts, page, limit, total } = action.payload
+
+                state.page = page
+                state.limit=limit
+                state.total = total
+
+                if (page === 1) {
+                    state.items = posts
+                } else{
+                    state.items.push(...posts)
+                }
+                state.hasMore = state.items.length < total
+            })
+            .addCase(fetchPosts.rejected, (state, action)=>{
+                state.loading = false
+                state.error = action.payload
+            })
     }
 })
 
-export const { setPrevFetchedUserId, likeOptimisticSingle, likeRollbackSingle } = postSlice.actions
+export const { setPrevFetchedUserId, likeOptimisticSingle, likeRollbackSingle, resetPosts } = postSlice.actions
 export default postSlice.reducer
