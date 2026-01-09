@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import { getUserPosts, setPrevFetchedUserId } from '../stores/slice/postSlice'
 import { Link, useNavigate } from 'react-router-dom'
 
-const UserPosts = ({ fetchedUserId, setPostCount }) => {
+const UserPosts = ({ fetchedUserId }) => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const { userPosts, postLoading, prevFetchedUserId } = useSelector((state) => state.post)
