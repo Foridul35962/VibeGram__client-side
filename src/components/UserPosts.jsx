@@ -1,10 +1,10 @@
-import { Grid, Copy } from 'lucide-react'
+import { Grid, Copy, Heart, MessageCircle } from 'lucide-react'
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { getUserPosts, setPrevFetchedUserId } from '../stores/slice/postSlice'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
-const UserPosts = ({ fetchedUserId }) => {
+const UserPosts = ({ fetchedUserId, setPostCount }) => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const { userPosts, postLoading, prevFetchedUserId } = useSelector((state) => state.post)
@@ -39,30 +39,37 @@ const UserPosts = ({ fetchedUserId }) => {
             ) : (
                 <div className='grid grid-cols-3 gap-1 md:gap-4 p-1 md:p-4'>
                     {userPosts.map((post) => (
-                        <div 
+                        <Link
+                            to={`/post/${post._id}`}
                             key={post._id}
-                            onClick={()=>navigate(`/post/${post._id}`)}
                             className='relative aspect-square group cursor-pointer overflow-hidden bg-zinc-900 rounded-sm md:rounded-lg'
                         >
-                            {/* Main Image (Always take the first media) */}
-                            <img 
-                                src={post.media[0]?.url} 
-                                alt={post.caption} 
-                                className='w-full h-full object-cover transition-transform duration-500 group-hover:scale-110'
+                            {/* First Media Preview */}
+                            <img
+                                src={post.media[0]?.url}
+                                alt={post.caption}
+                                className='w-full h-full object-cover transition-transform duration-700 group-hover:scale-110'
                             />
 
-                            {post.media.length > 1 && (
-                                <div className='absolute top-2 right-2 text-white drop-shadow-lg pointer-events-none'>
-                                    <Copy size={18} className='rotate-180' />
+                            {/* Multiple Media Indicator (Instagram Style) */}
+                            {post.media?.length > 1 && (
+                                <div className='absolute top-2 right-2 text-white drop-shadow-md z-10'>
+                                    <Copy size={18} className='rotate-180 drop-shadow-2xl' />
                                 </div>
                             )}
 
-                            <div className='absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-4'>
+                            {/* Hover Overlay with Stats (Standard View) */}
+                            <div className='absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-4 md:gap-8'>
                                 <div className='flex items-center gap-1 text-white font-bold'>
-                                   <span className='text-sm'>View</span>
+                                    <Heart size={20} className='fill-white' />
+                                    <span className='text-xs md:text-sm'>{post.likes?.length || 0}</span>
+                                </div>
+                                <div className='flex items-center gap-1 text-white font-bold'>
+                                    <MessageCircle size={20} className='fill-white' />
+                                    <span className='text-xs md:text-sm'>{post.comments?.length || 0}</span>
                                 </div>
                             </div>
-                        </div>
+                        </Link>
                     ))}
                 </div>
             )}
