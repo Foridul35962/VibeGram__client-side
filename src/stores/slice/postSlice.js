@@ -68,6 +68,7 @@ export const savedUnsavedPosts = createAsyncThunk(
             const res = await axios.patch(`${SERVER_URL}/save-post`, data,
                 { withCredentials: true }
             )
+            return res.data
         } catch (error) {
             return rejectWithValue(error?.response?.data || "Something went wrong")
         }

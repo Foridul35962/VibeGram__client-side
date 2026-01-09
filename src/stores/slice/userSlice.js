@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 import axios from 'axios'
 import { login, logout } from "./authSlice"
+import { savedUnsavedPosts } from "./postSlice"
 
 
 const SERVER_URL = `${import.meta.env.VITE_SERVER_URL}/api/user`
@@ -87,7 +88,17 @@ const initialState = {
 const userSlice = createSlice({
     name: 'user',
     initialState,
-    reducers: {},
+    reducers: {
+        toggleSavePost: (state, action) => {
+            const postId = action.payload
+            const isSaved = state.user.savedPosts.some(id => id.toString() === postId.toString())
+            if (isSaved) {
+                state.user.savedPosts = state.user.savedPosts.filter(id=>id.toString() !== postId.toString())
+            } else{
+                state.user.savedPosts.push(postId)
+            }
+        }
+    },
     extraReducers: (builder) => {
         //login
         builder
@@ -163,13 +174,24 @@ const userSlice = createSlice({
             })
             .addCase(updateUserProfile.fulfilled, (state, action) => {
                 state.userLoading = false
-                console.log(action.payload.data)
                 state.user = action.payload.data
             })
             .addCase(updateUserProfile.rejected, (state) => {
                 state.userLoading = false
             })
+        //save post
+        builder
+            .addCase(savedUnsavedPosts.fulfilled, (state, action) => {
+                state.userLoading = false
+                const msg = action.payload.message
+                if (msg === 'save') {
+                    state.user.savedPosts = [...state.user.savedPosts, action.payload.data]
+                } else {
+                    state.user.savedPosts = state.user.savedPosts.filter(id => id !== action.payload.data)
+                }
+            })
     }
 })
 
+export const {toggleSavePost} = userSlice.actions
 export default userSlice.reducer

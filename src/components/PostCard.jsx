@@ -5,6 +5,7 @@ import avatar from '../assets/avatar.png'
 import { useDispatch, useSelector } from 'react-redux'
 import { likedUnlikedPost, likeOptimistic, savedUnsavedPosts } from '../stores/slice/postSlice'
 import { toast } from 'react-toastify'
+import { followUnfollow, toggleSavePost } from '../stores/slice/userSlice'
 
 const PostCard = ({ post }) => {
     const [currentIndex, setCurrentIndex] = useState(0)
@@ -17,6 +18,33 @@ const PostCard = ({ post }) => {
     const isLiked = likesArr.some(
         like => String(like?._id ?? like) === String(user?._id)
     );
+
+    const followArr = Array.isArray(user?.followings) ? user.followings : [];
+
+    const isfollow = followArr.some(
+        follow => String(follow) === String(post.author?._id)
+    );
+
+    const timeAgo = (dateStr) => {
+        const diff = Date.now() - new Date(dateStr).getTime();
+        const s = Math.floor(diff / 1000);
+        const m = Math.floor(s / 60);
+        const h = Math.floor(m / 60);
+        const d = Math.floor(h / 24);
+
+        if (s < 60) return `${s}s ago`;
+        if (m < 60) return `${m}m ago`;
+        if (h < 24) return `${h}h ago`;
+        return `${d}d ago`;
+    };
+
+    const handleFollow = async (followingUserId) => {
+        try {
+            dispatch(followUnfollow({ followingUserId }))
+        } catch (error) {
+            toast.error(error.message)
+        }
+    }
 
     const nextMedia = (e) => {
         e.preventDefault()
@@ -42,6 +70,7 @@ const PostCard = ({ post }) => {
     };
 
     const handlesavedPost = async () => {
+        dispatch(toggleSavePost(post._id))
         try {
             await dispatch(savedUnsavedPosts({ postId: post._id })).unwrap()
         } catch (error) {
@@ -60,8 +89,16 @@ const PostCard = ({ post }) => {
                     <Link to={`/profile/${post.author?.userName}`} className='text-[13px] font-bold hover:text-zinc-400 transition'>
                         {post.author?.userName}
                     </Link>
-                    <span className='text-zinc-500 text-xs'>• 1d</span>
+                    <span className='text-zinc-500 text-xs'>• {timeAgo(post.createdAt)}</span>
                 </div>
+                {
+                    post.author?._id !== user._id &&
+                    <button
+                        onClick={() => handleFollow(post.author?._id)}
+                        className='text-xs cursor-pointer font-bold text-blue-500 hover:text-white transition-colors duration-200'>
+                        {isfollow ? 'Unfollow' : 'Follow'}
+                    </button>
+                }
             </div>
 
             {/* 2. Media Carousel */}

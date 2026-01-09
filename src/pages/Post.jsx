@@ -7,6 +7,7 @@ import avatar from '../assets/avatar.png'
 import PostLoading from '../components/loading/PostLoading'
 import PostNotFound from '../components/not found/PostNotFound'
 import { toast } from 'react-toastify'
+import { toggleSavePost } from '../stores/slice/userSlice'
 
 const Post = () => {
     const dispatch = useDispatch()
@@ -60,6 +61,7 @@ const Post = () => {
 
     const handlesavedPost = async () => {
         try {
+            dispatch(toggleSavePost(post._id))
             await dispatch(savedUnsavedPosts({ postId })).unwrap()
         } catch (error) {
             toast.error(error.message)
