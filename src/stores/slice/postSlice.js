@@ -115,9 +115,9 @@ const toggleLike = (likes, user) => {
 
 export const fetchPosts = createAsyncThunk(
     'post/fetchPosts',
-    async({page, limit}, {rejectWithValue})=>{
+    async ({ page, limit }, { rejectWithValue }) => {
         try {
-            const res = await axios.get(`${SERVER_URL}/get-allPost?page=${page}&limit=${limit}`,{
+            const res = await axios.get(`${SERVER_URL}/get-allPost?page=${page}&limit=${limit}`, {
                 withCredentials: true
             })
             return res.data.data
@@ -134,9 +134,9 @@ const initialState = {
     prevFetchedUserId: null,
     commentLoading: false,
     items: [],  //fetch feed post
-    page:1,
-    limit:20,
-    total:0,
+    page: 1,
+    limit: 20,
+    total: 0,
     hasMore: true,
     loading: false,
     error: null
@@ -149,17 +149,40 @@ const postSlice = createSlice({
         setPrevFetchedUserId: (state, action) => {
             state.prevFetchedUserId = action.payload
         },
+
         likeOptimisticSingle: (state, action) => {
             const user = action.payload;
             if (!state.post) return;
             state.post.likes = toggleLike(state.post.likes, user);
         },
+
         likeRollbackSingle: (state, action) => {
             const prevLikes = action.payload;
             if (!state.post) return;
             state.post.likes = prevLikes;
         },
-        resetPosts:(state)=>{
+        
+        likeOptimistic: (state, action) => {
+            const { user, postId } = action.payload;
+            if (!Array.isArray(state.items)) return;
+
+            const idx = state.items.findIndex(p => String(p._id) === String(postId));
+            if (idx === -1) return;
+
+            state.items[idx].likes = toggleLike(state.items[idx].likes, user);
+        },
+        
+        likeRollback: (state, action) => {
+            const { postId, prevLikes } = action.payload;
+            if (!Array.isArray(state.items)) return;
+
+            const idx = state.items.findIndex(p => String(p._id) === String(postId));
+            if (idx === -1) return;
+
+            state.items[idx].likes = prevLikes;
+        },
+        
+        resetPosts: (state) => {
             state.items = []
             state.page = 1
             state.total = 0
@@ -174,9 +197,14 @@ const postSlice = createSlice({
             .addCase(uploadPost.pending, (state) => {
                 state.postLoading = true
             })
-            .addCase(uploadPost.fulfilled, (state) => {
+            .addCase(uploadPost.fulfilled, (state, action) => {
                 state.postLoading = false
                 state.prevFetchedUserId = null
+
+                const newPost = action.payload.data
+                state.items = [newPost, ...state.items]
+                state.total += 1
+                state.hasMore = state.items.length < state.total
             })
             .addCase(uploadPost.rejected, (state) => {
                 state.postLoading = false
@@ -230,36 +258,45 @@ const postSlice = createSlice({
                 state.commentLoading = false
             })
         //like unlike
-        builder
-            .addCase(likedUnlikedPost.fulfilled, (state, action) => {
-                state.post.likes = action.payload.data.postLikes
-            })
+        builder.addCase(likedUnlikedPost.fulfilled, (state, action) => {
+            const { postId, postLikes } = action.payload.data;
+
+            if (Array.isArray(state.items)) {
+                const idx = state.items.findIndex(p => String(p._id) === String(postId));
+                if (idx !== -1) state.items[idx].likes = postLikes;
+            }
+
+            if (state.post && String(state.post._id) === String(postId)) {
+                state.post.likes = postLikes;
+            }
+        });
+
         //fetch all post for feed
         builder
-            .addCase(fetchPosts.pending, (state)=>{
+            .addCase(fetchPosts.pending, (state) => {
                 state.loading = true
             })
-            .addCase(fetchPosts.fulfilled, (state, action)=>{
+            .addCase(fetchPosts.fulfilled, (state, action) => {
                 state.loading = false
-                const {posts, page, limit, total } = action.payload
+                const { posts, page, limit, total } = action.payload
 
                 state.page = page
-                state.limit=limit
+                state.limit = limit
                 state.total = total
 
                 if (page === 1) {
                     state.items = posts
-                } else{
+                } else {
                     state.items.push(...posts)
                 }
                 state.hasMore = state.items.length < total
             })
-            .addCase(fetchPosts.rejected, (state, action)=>{
+            .addCase(fetchPosts.rejected, (state, action) => {
                 state.loading = false
                 state.error = action.payload
             })
     }
 })
 
-export const { setPrevFetchedUserId, likeOptimisticSingle, likeRollbackSingle, resetPosts } = postSlice.actions
+export const { setPrevFetchedUserId, likeOptimisticSingle, likeOptimistic, likeRollbackSingle, resetPosts } = postSlice.actions
 export default postSlice.reducer

@@ -1,10 +1,22 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Heart, MessageCircle, Bookmark, Send, MoreHorizontal, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Heart, MessageCircle, Bookmark, Send, ChevronLeft, ChevronRight } from 'lucide-react'
 import avatar from '../assets/avatar.png'
+import { useDispatch, useSelector } from 'react-redux'
+import { likedUnlikedPost, likeOptimistic, savedUnsavedPosts } from '../stores/slice/postSlice'
+import { toast } from 'react-toastify'
 
 const PostCard = ({ post }) => {
     const [currentIndex, setCurrentIndex] = useState(0)
+    const { user } = useSelector((state) => state.user)
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+
+    const likesArr = Array.isArray(post?.likes) ? post.likes : [];
+
+    const isLiked = likesArr.some(
+        like => String(like?._id ?? like) === String(user?._id)
+    );
 
     const nextMedia = (e) => {
         e.preventDefault()
@@ -14,6 +26,27 @@ const PostCard = ({ post }) => {
     const prevMedia = (e) => {
         e.preventDefault()
         if (currentIndex > 0) setCurrentIndex(prev => prev - 1)
+    }
+
+    const handleLikePost = async () => {
+        const prevLikes = Array.isArray(post.likes) ? [...post.likes] : [];
+
+        dispatch(likeOptimistic({ user, postId: post._id }));
+
+        try {
+            await dispatch(likedUnlikedPost({ postId: post._id })).unwrap();
+        } catch (error) {
+            dispatch(likeRollback({ postId: post._id, prevLikes }));
+            toast.error(error.message)
+        }
+    };
+
+    const handlesavedPost = async () => {
+        try {
+            await dispatch(savedUnsavedPosts({ postId: post._id })).unwrap()
+        } catch (error) {
+            toast.error(error.message)
+        }
     }
 
     return (
@@ -29,7 +62,6 @@ const PostCard = ({ post }) => {
                     </Link>
                     <span className='text-zinc-500 text-xs'>• 1d</span>
                 </div>
-                <MoreHorizontal className='cursor-pointer text-zinc-400' size={18} />
             </div>
 
             {/* 2. Media Carousel */}
@@ -65,16 +97,31 @@ const PostCard = ({ post }) => {
             {/* 3. Actions Bar */}
             <div className='flex items-center justify-between py-3 px-1'>
                 <div className='flex items-center gap-4 text-white'>
-                    <Heart className='cursor-pointer hover:text-zinc-500 transition' size={24} />
+                    <div onClick={handleLikePost} className="cursor-pointer">
+                        {isLiked ? (
+                            <Heart className='text-red-500 fill-red-500 transition' size={24} />
+                        ) : (
+                            <Heart className='hover:text-zinc-500 text-white transition' size={24} />
+                        )}
+                    </div>
                     <Link to={`/post/${post._id}`}><MessageCircle className='cursor-pointer hover:text-zinc-500 transition' size={24} /></Link>
                     {/* <Send className='cursor-pointer hover:text-zinc-500 transition' size={24} /> */}
                 </div>
-                <Bookmark className='cursor-pointer hover:text-zinc-500 transition' size={24} />
+                {
+                    post?.author?.userName !== user.userName &&
+                    <div onClick={handlesavedPost} className="cursor-pointer">
+                        {user.savedPosts.includes(post?._id) ? (
+                            <Bookmark className='text-white fill-white transition' size={24} />
+                        ) : (
+                            <Bookmark className='hover:text-zinc-500 transition cursor-pointer' size={24} />
+                        )}
+                    </div>
+                }
             </div>
 
             {/* 4. Likes & Caption */}
             <div className='space-y-1.5 px-1'>
-                <p className='text-sm font-bold'>{post.likes?.length || 0} likes</p>
+                <p onClick={() => navigate(`/post/${post._id}`)} className='text-sm cursor-pointer hover:underline font-bold'>{post.likes?.length || 0} likes</p>
                 <div className='text-sm leading-relaxed'>
                     <span className='font-bold mr-2'>{post.author?.userName}</span>
                     {post.caption}

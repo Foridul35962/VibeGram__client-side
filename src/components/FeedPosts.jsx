@@ -14,9 +14,10 @@ const FeedPosts = () => {
 
     //first load
     useEffect(() => {
-        dispatch(resetPosts())
-        dispatch(fetchPosts({ page: 1, limit }))
-    }, [dispatch, limit])
+        if (items.length === 0) {
+            dispatch(fetchPosts({ page: 1, limit }));
+        }
+    }, [dispatch, limit, items.length])
 
     //infinite scroll
     useEffect(() => {
