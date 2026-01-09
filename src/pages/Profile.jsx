@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { Settings, Grid, Bookmark, SquareUser } from 'lucide-react';
+import { Settings, Grid, Bookmark, SquareUser, X } from 'lucide-react';
+import { Link } from 'react-router-dom'
 import avatar from '../assets/avatar.png'
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchedUser } from '../stores/slice/userSlice';
+import { fetchedUser, followUnfollow, toggleFollow } from '../stores/slice/userSlice';
 import { useNavigate, useParams } from 'react-router-dom';
 import ProfileLoad from '../components/loading/ProfileLoad';
 import ProfileNotFound from '../components/not found/ProfileNotFound';
@@ -14,11 +15,15 @@ import { toast } from 'react-toastify';
 
 const Profile = () => {
     const { fetchedUserData, user, userFetchLoading } = useSelector((state) => state.user)
+    const { userPosts } = useSelector((state) => state.post)
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const { userName } = useParams()
     const [showGrid, setShowGrid] = useState('posts')
     const [showLogout, setShowLogout] = useState(false)
+    const [showFollowings, setShowFollowings] = useState(false)
+    const [showFollowers, setShowFollowers] = useState(false)
+    const [postCount, setPostCount] = useState(0)
 
     const handleLogOut = async () => {
         if (window.confirm('Are you want to Logged Out?')) {
@@ -36,6 +41,21 @@ const Profile = () => {
         dispatch(fetchedUser(userName))
     }, [userName, dispatch])
 
+    const followArr = Array.isArray(user?.followings) ? user.followings : [];
+
+    const isfollow = followArr.some(
+        follow => String(follow) === String(fetchedUserData?._id)
+    );
+
+    const handleFollow = async (followingUserId) => {
+        dispatch(toggleFollow(followingUserId))
+        try {
+            dispatch(followUnfollow({ followingUserId }))
+        } catch (error) {
+            toast.error(error.message)
+        }
+    }
+
     return (
         <>
             {
@@ -44,7 +64,7 @@ const Profile = () => {
                         <div className='max-w-5xl mx-auto px-4 py-8'>
 
                             {/* Header Section */}
-                            <header className='flex flex-col md:flex-row items-center md:items-start gap-10 mb-12 px-2'>
+                            <header className='flex flex-col relative md:flex-row items-center md:items-start gap-10 mb-12 px-2'>
                                 {/* Avatar Container */}
                                 <div className='relative group'>
                                     <div className='size-32 md:size-44 rounded-full p-0.75 bg-linear-to-tr from-yellow-500 to-fuchsia-600'>
@@ -93,13 +113,113 @@ const Profile = () => {
                                                 </div>
                                             </div>
                                         }
+
+                                        {/* follow unfollow */}
+                                        {
+                                            fetchedUserData._id !== user._id &&
+                                            <button
+                                                onClick={() => handleFollow(fetchedUserData?._id)}
+                                                className='bg-zinc-800 cursor-pointer hover:bg-zinc-700 px-5 py-1.5 rounded-lg text-sm font-semibold transition'>
+                                                {isfollow ? 'Unfollow' : 'Follow'}
+                                            </button>
+                                        }
                                     </div>
 
                                     {/* Stats for Desktop */}
                                     <div className='hidden md:flex gap-10'>
-                                        <div><span className='font-bold'>{fetchedUserData?.posts?.length}</span> posts</div>
-                                        <div><span className='font-bold'>0</span> followers</div>
-                                        <div><span className='font-bold'>{fetchedUserData?.followings?.length}</span> following</div>
+                                        {/* Posts Count */}
+                                        <div><span className='font-bold'>{userPosts?.length || 0}</span> posts</div>
+
+                                        {/* Followers Section */}
+                                        <div className='relative'>
+                                            <span
+                                                onClick={() => {
+                                                    setShowFollowers(!showFollowers);
+                                                    setShowFollowings(false);
+                                                }}
+                                                className='font-bold hover:underline cursor-pointer'
+                                            >
+                                                {fetchedUserData?.followers?.length || 0} followers
+                                            </span>
+
+                                            {showFollowers && (
+                                                <>
+                                                    <div className='fixed inset-0 z-40' onClick={() => setShowFollowers(false)} />
+                                                    <div className='absolute left-0 top-full mt-2 w-64 max-h-60 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-2 duration-200'>
+                                                        <div className='p-2 border-b border-zinc-800 flex justify-between items-center sticky top-0 bg-zinc-900'>
+                                                            <span className='text-[10px] font-black uppercase text-zinc-500 px-2'>Followers</span>
+                                                            <X
+                                                                size={14} className='cursor-pointer'
+                                                                onClick={() => setShowFollowers(false)}
+                                                            />
+                                                        </div>
+                                                        {fetchedUserData?.followers?.length > 0 ? (
+                                                            fetchedUserData.followers.map(lu => (
+                                                                <Link
+                                                                    key={lu._id}
+                                                                    to={`/profile/${lu.userName}`}
+                                                                    onClick={() => setShowFollowers(!showFollowers)}
+                                                                    className='flex items-center gap-3 p-2.5 hover:bg-zinc-800 transition'>
+                                                                    <img
+                                                                        src={lu?.image?.url || avatar}
+                                                                        className='size-8 rounded-full object-cover bg-zinc-800'
+                                                                        alt="profile"
+                                                                    />
+                                                                    <span className='text-xs font-bold text-white'>
+                                                                        {lu.userName}
+                                                                    </span>
+                                                                </Link>
+                                                            ))
+                                                        ) : (
+                                                            <div className='p-4 text-center text-xs text-zinc-500'>No followers found</div>
+                                                        )}
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
+
+                                        {/* Followings Section */}
+                                        <div className='relative'>
+                                            <span
+                                                onClick={() => {
+                                                    setShowFollowings(!showFollowings);
+                                                    setShowFollowers(false);
+                                                }}
+                                                className='font-bold hover:underline cursor-pointer'
+                                            >
+                                                {fetchedUserData?.followings?.length || 0} following
+                                            </span>
+
+                                            {showFollowings && (
+                                                <>
+                                                    <div className='fixed inset-0 z-40' onClick={() => setShowFollowings(false)} />
+                                                    <div className='absolute left-0 top-full mt-2 w-64 max-h-60 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-2 duration-200'>
+                                                        <div className='p-2 border-b border-zinc-800 flex justify-between items-center sticky top-0 bg-zinc-900'>
+                                                            <span className='text-[10px] font-black uppercase text-zinc-500 px-2'>Following</span>
+                                                            <X size={14} className='cursor-pointer' onClick={() => setShowFollowings(false)} />
+                                                        </div>
+                                                        {fetchedUserData?.followings?.length > 0 ? (
+                                                            fetchedUserData.followings.map(lu => (
+                                                                <Link
+                                                                    key={lu._id}
+                                                                    onClick={() => setShowFollowings(!showFollowings)}
+                                                                    to={`/profile/${lu.userName}`}
+                                                                    className='flex items-center gap-3 p-2.5 hover:bg-zinc-800 transition'>
+                                                                    <img
+                                                                        src={lu?.image?.url || avatar}
+                                                                        className='size-8 rounded-full object-cover bg-zinc-800'
+                                                                        alt="profile"
+                                                                    />
+                                                                    <span className='text-xs font-bold text-white'>{lu.userName}</span>
+                                                                </Link>
+                                                            ))
+                                                        ) : (
+                                                            <div className='p-4 text-center text-xs text-zinc-500'>Not following anyone</div>
+                                                        )}
+                                                    </div>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
 
                                     {/* Bio */}
@@ -123,9 +243,104 @@ const Profile = () => {
 
                             {/* Stats for Mobile (shown only on small screens) */}
                             <div className='flex md:hidden justify-around py-4 border-t border-zinc-900 mb-4'>
-                                <div className='text-center'><p className='font-bold'>{fetchedUserData?.posts?.length}</p><p className='text-zinc-500 text-xs'>posts</p></div>
-                                <div className='text-center'><p className='font-bold'>0</p><p className='text-zinc-500 text-xs'>followers</p></div>
-                                <div className='text-center'><p className='font-bold'>{fetchedUserData?.followings?.length}</p><p className='text-zinc-500 text-xs'>following</p></div>
+                                {/* Posts Count */}
+                                <div className='text-center'>
+                                    <p className='font-bold'>{userPosts?.length || 0}</p>
+                                    <p className='text-zinc-500 text-xs'>posts</p>
+                                </div>
+
+                                {/* Followers Section - Mobile */}
+                                <div className='text-center relative'>
+                                    <div
+                                        onClick={() => {
+                                            setShowFollowers(!showFollowers);
+                                            setShowFollowings(false);
+                                        }}
+                                        className='cursor-pointer active:opacity-50'
+                                    >
+                                        <p className='font-bold'>{fetchedUserData?.followers?.length || 0}</p>
+                                        <p className='text-zinc-500 text-xs'>followers</p>
+                                    </div>
+
+                                    {showFollowers && (
+                                        <>
+                                            <div className='fixed inset-0 z-40'
+                                                onClick={() => setShowFollowers(false)} />
+                                            <div className='absolute left-1/2 -translate-x-1/2 top-full mt-2 w-64 max-h-60 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-2 duration-200'>
+                                                <div className='p-2 border-b border-zinc-800 flex justify-between items-center sticky top-0 bg-zinc-900'>
+                                                    <span className='text-[10px] font-black uppercase text-zinc-500 px-2'>Followers</span>
+                                                    <X
+                                                        size={14}
+                                                        className='cursor-pointer'
+                                                        onClick={() => setShowFollowers(false)}
+                                                    />
+                                                </div>
+                                                {fetchedUserData?.followers?.length > 0 ? (
+                                                    fetchedUserData.followers.map(lu => (
+                                                        <Link
+                                                            key={lu._id}
+                                                            to={`/profile/${lu.userName}`}
+                                                            className='flex items-center gap-3 p-2.5 hover:bg-zinc-800 transition text-left'
+                                                        >
+                                                            <img
+                                                                src={lu?.image?.url || avatar}
+                                                                className='size-8 rounded-full object-cover bg-zinc-800'
+                                                                alt=""
+                                                            />
+                                                            <span className='text-xs font-bold text-white truncate'>{lu.userName}</span>
+                                                        </Link>
+                                                    ))
+                                                ) : (
+                                                    <p className='p-4 text-[10px] text-zinc-500'>No followers found</p>
+                                                )}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+
+                                {/* Following Section - Mobile */}
+                                <div className='text-center relative'>
+                                    <div
+                                        onClick={() => {
+                                            setShowFollowings(!showFollowings);
+                                            setShowFollowers(false);
+                                        }}
+                                        className='cursor-pointer active:opacity-50'
+                                    >
+                                        <p className='font-bold'>{fetchedUserData?.followings?.length || 0}</p>
+                                        <p className='text-zinc-500 text-xs'>following</p>
+                                    </div>
+
+                                    {showFollowings && (
+                                        <>
+                                            <div className='fixed inset-0 z-40' onClick={() => setShowFollowings(false)} />
+                                            <div className='absolute -left-14 -translate-x-1/2 top-full mt-2 w-64 max-h-60 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 overflow-y-auto no-scrollbar animate-in fade-in slide-in-from-top-2 duration-200'>
+                                                <div className='p-2 border-b border-zinc-800 flex justify-between items-center sticky top-0 bg-zinc-900'>
+                                                    <span className='text-[10px] font-black uppercase text-zinc-500 px-2'>Following</span>
+                                                    <X size={14} className='cursor-pointer' onClick={() => setShowFollowings(false)} />
+                                                </div>
+                                                {fetchedUserData?.followings?.length > 0 ? (
+                                                    fetchedUserData.followings.map(lu => (
+                                                        <Link
+                                                            key={lu._id}
+                                                            to={`/profile/${lu.userName}`}
+                                                            className='flex items-center gap-3 p-2.5 hover:bg-zinc-800 transition text-left'
+                                                        >
+                                                            <img
+                                                                src={lu?.image?.url || avatar}
+                                                                className='size-8 rounded-full object-cover bg-zinc-800'
+                                                                alt=""
+                                                            />
+                                                            <span className='text-xs font-bold text-white truncate'>{lu.userName}</span>
+                                                        </Link>
+                                                    ))
+                                                ) : (
+                                                    <p className='p-4 text-[10px] text-zinc-500'>Not following anyone</p>
+                                                )}
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Main Content Area (Similar to your Feed layout) */}
