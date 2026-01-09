@@ -5,7 +5,7 @@ import avatar from '../assets/avatar.png'
 import { useDispatch, useSelector } from 'react-redux'
 import { likedUnlikedPost, likeOptimistic, savedUnsavedPosts } from '../stores/slice/postSlice'
 import { toast } from 'react-toastify'
-import { followUnfollow, toggleSavePost } from '../stores/slice/userSlice'
+import { followUnfollow, toggleFollow, toggleSavePost } from '../stores/slice/userSlice'
 
 const PostCard = ({ post }) => {
     const [currentIndex, setCurrentIndex] = useState(0)
@@ -39,6 +39,7 @@ const PostCard = ({ post }) => {
     };
 
     const handleFollow = async (followingUserId) => {
+        dispatch(toggleFollow(followingUserId))
         try {
             dispatch(followUnfollow({ followingUserId }))
         } catch (error) {

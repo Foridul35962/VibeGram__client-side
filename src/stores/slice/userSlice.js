@@ -93,9 +93,19 @@ const userSlice = createSlice({
             const postId = action.payload
             const isSaved = state.user.savedPosts.some(id => id.toString() === postId.toString())
             if (isSaved) {
-                state.user.savedPosts = state.user.savedPosts.filter(id=>id.toString() !== postId.toString())
-            } else{
+                state.user.savedPosts = state.user.savedPosts.filter(id => id.toString() !== postId.toString())
+            } else {
                 state.user.savedPosts.push(postId)
+            }
+        },
+
+        toggleFollow: (state, action) => {
+            const followedId = action.payload
+            const isFollow = state.user.followings.some(id => id.toString() === followedId.toString())
+            if (isFollow) {
+                state.user.followings = state.user.followings.filter(id => id.toString() !== followedId.toString())
+            } else {
+                state.user.followings.push(followedId)
             }
         }
     },
@@ -193,5 +203,5 @@ const userSlice = createSlice({
     }
 })
 
-export const {toggleSavePost} = userSlice.actions
+export const { toggleSavePost, toggleFollow } = userSlice.actions
 export default userSlice.reducer
