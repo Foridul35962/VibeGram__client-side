@@ -13,6 +13,7 @@ import Profile from './pages/Profile'
 import UpdateProfile from './pages/UpdateProfile'
 import UploadAllPost from './pages/UploadAllPost'
 import Post from './pages/Post'
+import Reels from './pages/Reels'
 
 
 const router = createBrowserRouter([
@@ -42,6 +43,14 @@ const router = createBrowserRouter([
           {
             path: '/post/:postId',
             element: <Post />
+          },
+          {
+            path: '/reels/:reelId',
+            element: <Reels />
+          },
+          {
+            path: '/reels',
+            element: <Reels />
           },
         ]
       },
