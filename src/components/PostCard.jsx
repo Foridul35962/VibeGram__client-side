@@ -9,7 +9,7 @@ import { followUnfollow, toggleFollow, toggleSavePost } from '../stores/slice/us
 
 const PostCard = ({ post }) => {
     const [currentIndex, setCurrentIndex] = useState(0)
-    const { user } = useSelector((state) => state.user)
+    const { user, userLoading } = useSelector((state) => state.user)
     const dispatch = useDispatch()
     const navigate = useNavigate()
 
@@ -95,6 +95,7 @@ const PostCard = ({ post }) => {
                 {
                     post.author?._id !== user._id &&
                     <button
+                        disabled={userLoading}
                         onClick={() => handleFollow(post.author?._id)}
                         className='text-xs cursor-pointer font-bold text-blue-500 hover:text-white transition-colors duration-200'>
                         {isfollow ? 'Unfollow' : 'Follow'}

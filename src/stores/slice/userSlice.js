@@ -104,8 +104,15 @@ const userSlice = createSlice({
             const isFollow = state.user.followings.some(id => id.toString() === followedId.toString())
             if (isFollow) {
                 state.user.followings = state.user.followings.filter(id => id.toString() !== followedId.toString())
+                if (state.fetchedUserData?.followers) {
+                    state.fetchedUserData.followers =
+                        state.fetchedUserData.followers.filter(
+                            user => user._id.toString() !== state.user._id.toString()
+                        )
+                }
             } else {
                 state.user.followings.push(followedId)
+                state.fetchedUserData?.followers.push(state.user)
             }
         }
     },

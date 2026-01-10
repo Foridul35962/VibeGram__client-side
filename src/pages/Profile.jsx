@@ -14,7 +14,7 @@ import { logout } from '../stores/slice/authSlice';
 import { toast } from 'react-toastify';
 
 const Profile = () => {
-    const { fetchedUserData, user, userFetchLoading } = useSelector((state) => state.user)
+    const { fetchedUserData, user, userLoading, userFetchLoading } = useSelector((state) => state.user)
     const { userPosts } = useSelector((state) => state.post)
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -23,7 +23,6 @@ const Profile = () => {
     const [showLogout, setShowLogout] = useState(false)
     const [showFollowings, setShowFollowings] = useState(false)
     const [showFollowers, setShowFollowers] = useState(false)
-    const [postCount, setPostCount] = useState(0)
 
     const handleLogOut = async () => {
         if (window.confirm('Are you want to Logged Out?')) {
@@ -118,6 +117,7 @@ const Profile = () => {
                                         {
                                             fetchedUserData._id !== user._id &&
                                             <button
+                                                disabled={userLoading}
                                                 onClick={() => handleFollow(fetchedUserData?._id)}
                                                 className='bg-zinc-800 cursor-pointer hover:bg-zinc-700 px-5 py-1.5 rounded-lg text-sm font-semibold transition'>
                                                 {isfollow ? 'Unfollow' : 'Follow'}
