@@ -119,6 +119,7 @@ const toggleLike = (likes, user) => {
 const initialState = {
     reelLoading: false,
     reel: null,
+    reelCommentLoading: false,
     userReel: [],
     prevFetchedUserId: null,
     allReels: [],
@@ -221,6 +222,22 @@ const reelSlice = createSlice({
             })
             .addCase(getReel.rejected, (state) => {
                 state.reelLoading = false
+            })
+        //reel comment
+        builder
+            .addCase(commentReel.pending, (state) => {
+                state.reelCommentLoading = true
+            })
+            .addCase(commentReel.fulfilled, (state, action) => {
+                state.reelCommentLoading = false
+                const { reelId, comment } = action.payload.data
+                const idx = state.allReels.findIndex(r => String(r?._id) === String(reelId))
+                if (idx === -1) return
+
+                state.allReels[idx].comments.push(comment)
+            })
+            .addCase(commentReel.rejected, (state) => {
+                state.reelCommentLoading = false
             })
     }
 })

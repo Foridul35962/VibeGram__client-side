@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useParams } from 'react-router-dom'
 import { getAllReels, getReel } from '../stores/slice/reelSlice'
@@ -7,6 +7,7 @@ import ReelCard from '../components/ReelCard'
 const Reels = () => {
   const dispatch = useDispatch()
   const { reelId } = useParams()
+  const [isMuted, setIsMuted] = useState(false);
 
   const { reel, allReels, page, limit, loading, reelLoading, hasMore, error } = useSelector((state) => state.reel)
 
@@ -81,6 +82,8 @@ const Reels = () => {
       {/* Reels */}
       {mergedReels.map((r, index) => (
         <ReelCard
+          isMuted = {isMuted}
+          setIsMuted = {setIsMuted}
           key={r?._id}
           r={r}
           ref={index === 0 ? firstReelRef : null}

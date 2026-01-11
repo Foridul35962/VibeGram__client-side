@@ -1,15 +1,16 @@
 import React, { forwardRef, useEffect, useRef, useState } from 'react'
-import { Heart, MessageCircle, Share2, Music2, MoreVertical, Send } from 'lucide-react'
+import { Heart, MessageCircle, Share2, Music2, MoreVertical, Send, VolumeX, Volume2 } from 'lucide-react'
 import avatar from '../assets/avatar.png'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { followUnfollow, toggleFollow } from '../stores/slice/userSlice'
 import { toast } from 'react-toastify'
-import { likedUnlikedReel, reelsLikeOptimistic, reelsLikeRollBack } from '../stores/slice/reelSlice'
+import { commentReel, likedUnlikedReel, reelsLikeOptimistic, reelsLikeRollBack } from '../stores/slice/reelSlice'
 
-const ReelCard = forwardRef(({ r }, ref) => {
+const ReelCard = forwardRef(({ r, isMuted, setIsMuted }, ref) => {
   const videoRef = useRef(null)
   const { user } = useSelector((state) => state.user)
+  const { reelCommentLoading } = useSelector((state) => state.reel)
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [showCommentBox, setShowCommentBox] = useState(false)
@@ -73,6 +74,14 @@ const ReelCard = forwardRef(({ r }, ref) => {
 
   const handleComment = async (e) => {
     e.preventDefault()
+    const message = e.target.message.value
+    const reelId = r._id
+    try {
+      await dispatch(commentReel({ message, reelId })).unwrap()
+      e.target.message.value = ""
+    } catch (error) {
+      toast.error(error.message)
+    }
   }
 
 
@@ -88,12 +97,20 @@ const ReelCard = forwardRef(({ r }, ref) => {
           className="h-full w-full object-cover"
           src={r?.media?.url}
           loop
+          muted={isMuted}
           playsInline
           onClick={togglePlay}
         />
 
         {/* Shadow overlay */}
         <div className="absolute inset-0 bg-linear-to-b from-black/20 via-transparent to-black/70 pointer-events-none" />
+
+        <button
+          onClick={() => setIsMuted(!isMuted)}
+          className="absolute top-10 right-6 z-10 p-2 cursor-pointer bg-black/40 hover:bg-black/60 text-white rounded-full backdrop-blur-sm transition-all"
+        >
+          {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+        </button>
       </div>
 
       {/* --- Sidebar Actions (Right Side) --- */}
@@ -134,7 +151,7 @@ const ReelCard = forwardRef(({ r }, ref) => {
                 </div>
 
                 {/* Comments List */}
-                <div className='max-h-60 overflow-y-auto p-4 space-y-4 custom-scrollbar'>
+                <div className='max-h-30 lg:max-h-40 overflow-y-auto p-4 space-y-4 custom-scrollbar'>
                   {r?.comments && r.comments.length > 0 ? (
                     r.comments.map((comment, index) => (
                       <div key={index} className="flex gap-3">
@@ -160,11 +177,19 @@ const ReelCard = forwardRef(({ r }, ref) => {
                 <form onSubmit={handleComment} className="p-3 bg-zinc-900/50 border-t border-zinc-800 flex items-center gap-2">
                   <input
                     type="text"
+                    name='message'
                     placeholder="Add a comment..."
                     className="flex-1 bg-zinc-800 border-none rounded-full px-4 py-2 text-sm text-white focus:ring-1 focus:ring-blue-500 outline-none"
                   />
-                  <button className="p-2 bg-blue-600 hover:bg-blue-500 text-white rounded-full transition-colors">
-                    <Send size={16} />
+                  <button
+                    disabled={reelCommentLoading}
+                    className="p-2 bg-blue-600 disabled:bg-blue-400 cursor-pointer hover:bg-blue-500 text-white rounded-full transition-colors flex items-center justify-center min-w-8 min-h-8"
+                  >
+                    {!reelCommentLoading ? (
+                      <Send size={16} />
+                    ) : (
+                      <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    )}
                   </button>
                 </form>
               </div>
