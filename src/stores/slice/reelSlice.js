@@ -166,9 +166,10 @@ const reelSlice = createSlice({
             .addCase(uploadReel.pending, (state) => {
                 state.reelLoading = true
             })
-            .addCase(uploadReel.fulfilled, (state) => {
+            .addCase(uploadReel.fulfilled, (state, action) => {
                 state.reelLoading = false
                 state.prevFetchedUserId = null
+                state.reel = action.payload.data
             })
             .addCase(uploadReel.rejected, (state) => {
                 state.reelLoading = false
@@ -237,6 +238,19 @@ const reelSlice = createSlice({
                 state.allReels[idx].comments.push(comment)
             })
             .addCase(commentReel.rejected, (state) => {
+                state.reelCommentLoading = false
+            })
+        //delete reels
+        builder
+            .addCase(deleteReel.pending, (state) => {
+                state.reelCommentLoading = true
+            })
+            .addCase(deleteReel.fulfilled, (state, action) => {
+                state.reelCommentLoading = false
+                const reelId = action.payload.data
+                state.allReels = state.allReels.filter(r => r._id !== reelId)
+            })
+            .addCase(deleteReel.rejected, (state)=>{
                 state.reelCommentLoading = false
             })
     }

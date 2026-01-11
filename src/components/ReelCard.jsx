@@ -1,11 +1,11 @@
 import React, { forwardRef, useEffect, useRef, useState } from 'react'
-import { Heart, MessageCircle, Share2, Music2, MoreVertical, Send, VolumeX, Volume2 } from 'lucide-react'
+import { Heart, MessageCircle, Share2, Music2, MoreVertical, Send, VolumeX, Volume2, Trash2 } from 'lucide-react'
 import avatar from '../assets/avatar.png'
 import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { followUnfollow, toggleFollow } from '../stores/slice/userSlice'
 import { toast } from 'react-toastify'
-import { commentReel, likedUnlikedReel, reelsLikeOptimistic, reelsLikeRollBack } from '../stores/slice/reelSlice'
+import { commentReel, deleteReel, likedUnlikedReel, reelsLikeOptimistic, reelsLikeRollBack } from '../stores/slice/reelSlice'
 
 const ReelCard = forwardRef(({ r, isMuted, setIsMuted }, ref) => {
   const videoRef = useRef(null)
@@ -14,6 +14,7 @@ const ReelCard = forwardRef(({ r, isMuted, setIsMuted }, ref) => {
   const navigate = useNavigate()
   const dispatch = useDispatch()
   const [showCommentBox, setShowCommentBox] = useState(false)
+  const [showDeleteReel, setShowDeleteReel] = useState(false)
 
   // Auto play/pause based on visibility
   useEffect(() => {
@@ -79,6 +80,20 @@ const ReelCard = forwardRef(({ r, isMuted, setIsMuted }, ref) => {
     try {
       await dispatch(commentReel({ message, reelId })).unwrap()
       e.target.message.value = ""
+    } catch (error) {
+      toast.error(error.message)
+    }
+  }
+
+  const handleDeleteReel = async (e) => {
+    const reelId = r?._id
+    if (!window.confirm('Are you sure that you want to delete this reel?')) {
+      return
+    }
+    try {
+      await dispatch(deleteReel({ reelId })).unwrap()
+      setShowDeleteReel(!showDeleteReel)
+      toast.success('Reels deleted successfully')
     } catch (error) {
       toast.error(error.message)
     }
@@ -204,13 +219,49 @@ const ReelCard = forwardRef(({ r, isMuted, setIsMuted }, ref) => {
           <span className="text-[12px] font-medium mt-1">Share</span>
         </div>
 
-        <div className="cursor-pointer opacity-70 hover:opacity-100">
-          <MoreVertical size={24} />
-        </div>
+        {
+          user?._id === r?.author?._id &&
+          <div className='relative'>
+            <div
+              onClick={() => setShowDeleteReel(!showDeleteReel)}
+              className="cursor-pointer opacity-70 hover:opacity-100">
+              <MoreVertical size={24} />
+            </div>
+            {
+              showDeleteReel &&
+              <div className='absolute -bottom-6 right-4'>
+                <div
+                  className='fixed inset-0 z-40'
+                  onClick={() => setShowDeleteReel(false)}
+                />
+                <div className='absolute bottom-10 right-0 w-40 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200 overflow-hidden'>
+                  <button
+                    onClick={handleDeleteReel}
+                    disabled={reelCommentLoading}
+                    className='w-full cursor-pointer disabled:cursor-not-allowed text-left px-4 py-3 text-sm font-medium text-red-500 hover:bg-zinc-800 disabled:bg-zinc-800 transition-colors flex items-center gap-2'
+                  >
+                    {
+                      !reelCommentLoading ?
+                        <>
+                          <Trash2 size={16} />
+                          Delete Reel
+                        </> : (
+                          <div className='flex gap-2 items-center'>
+                            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            <p>Please Wait</p>
+                          </div>
+                        )
+                    }
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+        }
       </div>
 
       {/* --- Bottom Info (Caption & Author) --- */}
-      <div className="absolute bottom-10 left-4 right-16 text-white z-20">
+      <div className="absolute bottom-10 left-4 right-16 text-white z-10">
         {/* User info */}
         <div className="flex items-center space-x-3 mb-3">
           <div onClick={() => navigate(`/profile/${r?.author?.userName}`)} className="h-10 w-10 rounded-full cursor-pointer border-2 border-pink-500 p-px">
