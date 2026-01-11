@@ -97,7 +97,7 @@ const Profile = () => {
                                                     </button>
                                                     {
                                                         showLogout &&
-                                                        <div className='absulate right-0'>
+                                                        <div className='absolute right-0'>
                                                             <div className='fixed inset-0 z-40' onClick={() => setShowLogout(!showLogout)} />
                                                             <div className='absolute w-40 right-0 -bottom-12 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 animate-in fade-in slide-in-from-bottom-2 duration-200'>
                                                                 <button
