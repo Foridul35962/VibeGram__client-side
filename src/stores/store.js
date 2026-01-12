@@ -4,6 +4,7 @@ import userReducer from './slice/userSlice.js'
 import postReducer from './slice/postSlice.js'
 import reelReducer from './slice/reelSlice.js'
 import storyReducer from './slice/storySlice.js'
+import messageReducer from './slice/messageSlice.js'
 
 const store = configureStore({
     reducer: {
@@ -11,7 +12,8 @@ const store = configureStore({
         user: userReducer,
         post: postReducer,
         reel: reelReducer,
-        story: storyReducer
+        story: storyReducer,
+        message: messageReducer
     }
 })
 
