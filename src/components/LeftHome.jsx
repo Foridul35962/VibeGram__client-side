@@ -7,11 +7,13 @@ import { logout } from '../stores/slice/authSlice'
 import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 import { followUnfollow, getSuggestedUser } from '../stores/slice/userSlice'
+import { useState } from 'react'
 
 const LeftHome = () => {
     const { user, suggestedUser } = useSelector((state) => state.user)
     const dispatch = useDispatch()
     const navigate = useNavigate()
+    const [isfollow, setIsFollow] = useState(false)
     const handleLogout = async () => {
         if (window.confirm('Are you want to Logged Out?')) {
             try {
@@ -30,11 +32,13 @@ const LeftHome = () => {
 
     const handleFollow = async (followingUserId) => {
         try {
+            setIsFollow(!isfollow)
             dispatch(followUnfollow({ followingUserId }))
         } catch (error) {
             console.log(error)
         }
     }
+    
 
     return (
         <div className='w-1/4 hidden lg:flex flex-col gap-6 min-h-screen h-screen sticky top-0 p-6 border-r border-gray-800 bg-black'>
@@ -108,7 +112,7 @@ const LeftHome = () => {
                                 <button
                                     onClick={() => handleFollow(user?._id)}
                                     className='text-xs cursor-pointer font-bold text-blue-500 hover:text-white transition-colors duration-200'>
-                                    Follow
+                                    {isfollow ? 'Unfollow' : 'Follow'}
                                 </button>
                             </div>
                         ))}
