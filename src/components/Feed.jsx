@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import logo from '../assets/logo.png'
-import { CirclePlus, Heart } from 'lucide-react'
+import { CirclePlus, Heart, MessageCircle } from 'lucide-react'
 import StoryDp from './story/StoryDp'
 import FeedPosts from './FeedPosts'
 import { useDispatch, useSelector } from 'react-redux'
@@ -36,7 +36,8 @@ const Feed = () => {
     <div className='w-full lg:w-1/2 min-h-dvh overflow-y-auto p-5'>
       <div className='flex lg:hidden justify-between items-center mb-4'>
         <img src={logo} alt="logo" className='w-32 object-contain cursor-pointer' />
-        <div className='p-2 hover:bg-gray-900 rounded-full transition duration-300 cursor-pointer'>
+        <div className='flex gap-3 items-center p-2 hover:bg-gray-900 rounded-full transition duration-300 cursor-pointer'>
+          <MessageCircle onClick={()=>navigate('/messages')} size={24} className='text-white' />
           <Heart size={24} className='text-white' />
         </div>
       </div>

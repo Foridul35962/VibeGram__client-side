@@ -113,6 +113,17 @@ const Profile = () => {
                                             </div>
                                         }
 
+                                        
+                                        {/* messages */}
+                                        {
+                                            fetchedUserData._id !== user._id &&
+                                            <button
+                                                onClick={() => navigate(`/chat/${fetchedUserData?._id}`)}
+                                                className='bg-zinc-800 cursor-pointer hover:bg-zinc-700 px-5 py-1.5 rounded-lg text-sm font-semibold transition'>
+                                                    Message
+                                            </button>
+                                        }
+
                                         {/* follow unfollow */}
                                         {
                                             fetchedUserData._id !== user._id &&

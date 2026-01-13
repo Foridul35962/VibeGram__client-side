@@ -35,7 +35,7 @@ const LeftHome = () => {
             setIsFollow(!isfollow)
             dispatch(followUnfollow({ followingUserId }))
         } catch (error) {
-            console.log(error)
+            toast.error(error.message)
         }
     }
     
