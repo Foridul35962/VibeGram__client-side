@@ -9,7 +9,9 @@ const Home = () => {
     <div className='w-full bg-black flex text-white px-0 sm:px-5'>
       <LeftHome />
       <Feed />
-      <RightHome />
+      <div className='w-1/4 hidden lg:block sticky top-0 h-screen overflow-hidden'>
+        <RightHome />
+      </div>
     </div>
   )
 }
