@@ -5,10 +5,10 @@ const SERVER_URL = `${import.meta.env.VITE_SERVER_URL}/api/message`
 
 export const sendMessage = createAsyncThunk(
     'message/send',
-    async({data, receiver}, {rejectWithValue})=>{
+    async ({ data, receiver }, { rejectWithValue }) => {
         try {
             const res = await axios.post(`${SERVER_URL}/send-message/${receiver}`, data,
-                {withCredentials: true}
+                { withCredentials: true }
             )
             return res.data
         } catch (error) {
@@ -19,10 +19,10 @@ export const sendMessage = createAsyncThunk(
 
 export const getAllMessages = createAsyncThunk(
     'message/allMessages',
-    async(receiver, {rejectWithValue})=>{
+    async (receiver, { rejectWithValue }) => {
         try {
             const res = await axios.get(`${SERVER_URL}/get-message/${receiver}`,
-                {withCredentials: true}
+                { withCredentials: true }
             )
             return res.data
         } catch (error) {
@@ -33,10 +33,10 @@ export const getAllMessages = createAsyncThunk(
 
 export const getPrevChatPartner = createAsyncThunk(
     'message/getChatPartner',
-    async(_, {rejectWithValue})=>{
+    async (_, { rejectWithValue }) => {
         try {
             const res = await axios.get(`${SERVER_URL}/prev-chatPartner`,
-                {withCredentials: true}
+                { withCredentials: true }
             )
             return res.data
         } catch (error) {
@@ -47,52 +47,72 @@ export const getPrevChatPartner = createAsyncThunk(
 
 const initialState = {
     messageLoading: false,
-    messages:[],
-    chatPartners: []
+    messages: [],
+    chatPartners: [],
+    partnerData: null
 }
 
 const messageSlice = createSlice({
     name: 'message',
     initialState,
-    reducers:{},
-    extraReducers: (builder)=>{
+    reducers: {
+        messageOptimisticAdd: (state, action) => {
+            state.messages.push(action.payload);
+        },
+        messageOptimisticFail: (state, action) => {
+            const { tempId, error } = action.payload;
+            const idx = state.messages.findIndex((m) => m._id === tempId);
+            if (idx !== -1) {
+                state.messages[idx].error = error;
+            }
+        }
+    },
+    extraReducers: (builder) => {
         //send message
         builder
-            .addCase(sendMessage.pending, (state)=>{
+            .addCase(sendMessage.pending, (state) => {
                 state.messageLoading = true
             })
-            .addCase(sendMessage.fulfilled, (state, action)=>{
+            .addCase(sendMessage.fulfilled, (state, action) => {
                 state.messageLoading = false
-                state.messages.push(action.payload.data)
             })
-            .addCase(sendMessage.rejected, (state)=>{
+            .addCase(sendMessage.rejected, (state) => {
                 state.messageLoading = false
+                const payload = action.payload;
+                if (payload?.tempId) {
+                    const idx = state.messages.findIndex((m) => m._id === payload.tempId);
+                    if (idx !== -1) {
+                        state.messages[idx].error = payload.message;
+                    }
+                }
             })
         //get all message
         builder
-            .addCase(getAllMessages.pending, (state)=>{
+            .addCase(getAllMessages.pending, (state) => {
                 state.messageLoading = true
             })
-            .addCase(getAllMessages.fulfilled, (state, action)=>{
+            .addCase(getAllMessages.fulfilled, (state, action) => {
                 state.messageLoading = false
-                state.messages = action.payload.data
+                state.messages = action.payload.data.messages
+                state.partnerData = action.payload.data.partner
             })
-            .addCase(getAllMessages.rejected, (state)=>{
+            .addCase(getAllMessages.rejected, (state) => {
                 state.messageLoading = false
             })
         //get chat partners
         builder
-            .addCase(getPrevChatPartner.pending, (state)=>{
+            .addCase(getPrevChatPartner.pending, (state) => {
                 state.messageLoading = true
             })
-            .addCase(getPrevChatPartner.fulfilled, (state, action)=>{
+            .addCase(getPrevChatPartner.fulfilled, (state, action) => {
                 state.messageLoading = false
                 state.chatPartners = action.payload.data
             })
-            .addCase(getPrevChatPartner.pending, (state)=>{
+            .addCase(getPrevChatPartner.rejected, (state) => {
                 state.messageLoading = false
             })
     }
 })
 
+export const { messageOptimisticAdd, messageOptimisticFail } = messageSlice.actions
 export default messageSlice.reducer
