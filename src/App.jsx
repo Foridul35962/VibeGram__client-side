@@ -14,6 +14,8 @@ import UpdateProfile from './pages/UpdateProfile'
 import UploadAllPost from './pages/UploadAllPost'
 import Post from './pages/Post'
 import Reels from './pages/Reels'
+import Chat from './pages/Chat'
+import RightHome from './components/RightHome'
 
 
 const router = createBrowserRouter([
@@ -52,8 +54,16 @@ const router = createBrowserRouter([
             path: '/reels',
             element: <Reels />
           },
+          {
+            path: '/messages',
+            element: <RightHome />
+          },
         ]
       },
+      {
+        path: '/chat/:partnerId',
+        element: <Chat />
+      }
     ]
   },
   {
