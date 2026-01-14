@@ -6,7 +6,7 @@ const UseGetUser = () => {
     const dispatch = useDispatch()
     useEffect(()=>{
         dispatch(getUser())
-    })
+    }, [dispatch])
 }
 
 export default UseGetUser
