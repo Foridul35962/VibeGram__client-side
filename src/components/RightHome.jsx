@@ -1,12 +1,11 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { getPrevChatPartner } from '../stores/slice/messageSlice'
-import { User } from 'lucide-react'
 import avatar from '../assets/avatar.png'
 import { useNavigate } from 'react-router-dom'
 
 const RightHome = () => {
-  const { chatPartners } = useSelector((state) => state.message)
+  const { chatPartners, onlineUsers } = useSelector((state) => state.message)
   const navigate = useNavigate()
   const dispatch = useDispatch()
 
@@ -29,38 +28,40 @@ const RightHome = () => {
       {/* Chat Partners List */}
       <div className="flex-1 overflow-y-auto no-scrollbar space-y-1">
         {chatPartners && chatPartners.length > 0 ? (
-          chatPartners.map((partner) => (
-            <div
-              key={partner._id}
-              onClick={()=>navigate(`/chat/${partner?.user?._id}`)}
-              className="flex items-center gap-4 p-3 rounded-2xl hover:bg-[#0f0f0f] border border-transparent hover:border-gray-800 transition-all duration-300 cursor-pointer group"
-            >
-              {/* Avatar with Glow Effect */}
-              <div className="relative shrink-0">
-                <div className="size-12 rounded-full p-0.5 bg-linear-to-tr from-gray-800 to-transparent group-hover:from-blue-600 group-hover:to-purple-600 transition-all duration-500">
-                  <img
-                    src={partner?.user?.image?.url || avatar}
-                    alt="user"
-                    className="w-full h-full rounded-full object-cover border-2 border-black"
-                  />
+          chatPartners.map((partner, idx) => {
+            const isOnline = onlineUsers?.[partner?.user?._id]
+            return (
+              <div
+                key={idx}
+                onClick={() => navigate(`/chat/${partner?.user?._id}`)}
+                className="flex items-center gap-4 p-3 rounded-2xl hover:bg-[#0f0f0f] border border-transparent hover:border-gray-800 transition-all duration-300 cursor-pointer group"
+              >
+                {/* Avatar with Glow Effect */}
+                <div className="relative shrink-0">
+                  <div className="size-12 rounded-full p-0.5 bg-linear-to-tr from-gray-800 to-transparent group-hover:from-blue-600 group-hover:to-purple-600 transition-all duration-500">
+                    <img
+                      src={partner?.user?.image?.url || avatar}
+                      alt="user"
+                      className="w-full h-full rounded-full object-cover border-2 border-black"
+                    />
+                  </div>
+                  <span className={`absolute bottom-0 right-0 size-3.5 border-[3px] border-black rounded-full shadow-lg ${isOnline ? 'bg-green-500 animate-pulse' : 'bg-gray-600'} `} ></span>
                 </div>
-                <span className="absolute bottom-0 right-0 size-3.5 bg-green-500 border-[3px] border-black rounded-full shadow-lg"></span>
-              </div>
 
-              {/* Info Section */}
-              <div className="flex flex-col min-w-0 flex-1">
-                <div className="flex justify-between items-center mb-0.5">
-                  <p className="font-bold text-[14px] text-gray-100 truncate group-hover:text-blue-400 transition-colors">
-                    {partner.user?.fullName || partner.user?.userName}
+                {/* Info Section */}
+                <div className="flex flex-col min-w-0 flex-1">
+                  <div className="flex justify-between items-center mb-0.5">
+                    <p className="font-bold text-[14px] text-gray-100 truncate group-hover:text-blue-400 transition-colors">
+                      {partner.user?.fullName || partner.user?.userName}
+                    </p>
+                  </div>
+                  <p className="text-[13px] text-gray-500 truncate leading-tight group-hover:text-gray-400 transition-colors">
+                    {partner.lastMessage?.text || "Click to start chatting"}
                   </p>
-                  <span className="text-[10px] text-gray-600 font-medium">12m</span>
                 </div>
-                <p className="text-[13px] text-gray-500 truncate leading-tight group-hover:text-gray-400 transition-colors">
-                  {partner.lastMessage?.text || "Click to start chatting"}
-                </p>
               </div>
-            </div>
-          ))
+            )
+          })
         ) : (
           <div className="flex flex-col items-center justify-center mt-20 opacity-40">
             <div className="size-16 bg-gray-900 rounded-full flex items-center justify-center mb-4">

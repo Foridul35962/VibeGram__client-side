@@ -1,5 +1,4 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
 import LeftHome from '../components/LeftHome'
 import Feed from '../components/Feed'
 import RightHome from '../components/RightHome'

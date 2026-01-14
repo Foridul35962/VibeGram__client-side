@@ -82,7 +82,8 @@ const initialState = {
     isFetched: false,
     fetchedUserData: null,
     userFetchLoading: false,
-    suggestedUser: []
+    suggestedUser: [],
+    socketConnected: false,
 }
 
 const userSlice = createSlice({
@@ -114,7 +115,10 @@ const userSlice = createSlice({
                 state.user.followings.push(followedId)
                 state.fetchedUserData?.followers.push(state.user)
             }
-        }
+        },
+        setSocketConnected: (state, action) => {
+            state.socketConnected = action.payload
+        },
     },
     extraReducers: (builder) => {
         //login
@@ -210,5 +214,5 @@ const userSlice = createSlice({
     }
 })
 
-export const { toggleSavePost, toggleFollow } = userSlice.actions
+export const { toggleSavePost, toggleFollow, setSocketConnected } = userSlice.actions
 export default userSlice.reducer

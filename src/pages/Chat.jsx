@@ -10,6 +10,7 @@ import { nanoid } from '@reduxjs/toolkit';
 const Chat = () => {
     const { messages, messageLoading, partnerData } = useSelector((state) => state.message);
     const { user } = useSelector((state) => state.user);
+    const { onlineUsers } = useSelector((state) => state.message)
     const dispatch = useDispatch();
     const { partnerId } = useParams();
     const [text, setText] = useState("");
@@ -17,6 +18,7 @@ const Chat = () => {
     const [file, setFile] = useState(null);
     const scrollRef = useRef(null);
     const navigate = useNavigate()
+    const isOnline = onlineUsers[partnerId]
 
     useEffect(() => {
         scrollRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -81,18 +83,23 @@ const Chat = () => {
                         <div className="relative group cursor-pointer">
                             <div className="absolute -inset-0.5 bg-linear-to-r from-indigo-500 to-purple-600 rounded-full blur opacity-30 group-hover:opacity-60 transition duration-500"></div>
                             <img
-                            src={partnerData?.image?.url || avatar}
-                            className="relative size-11 rounded-full object-cover border-2 border-zinc-900"
-                            alt="partner"
-                            onClick={()=>navigate(`/profile/${partnerData?.userName}`)}
+                                src={partnerData?.image?.url || avatar}
+                                className="relative size-11 rounded-full object-cover border-2 border-zinc-900"
+                                alt="partner"
+                                onClick={() => navigate(`/profile/${partnerData?.userName}`)}
                             />
                             <div className="absolute bottom-0 right-0 size-3.5 bg-emerald-500 border-[3px] border-[#09090b] rounded-full"></div>
                         </div>
                         <div>
-                            <h2 onClick={()=>navigate(`/profile/${partnerData?.userName}`)} className="text-[15px] font-semibold cursor-pointer tracking-wide">{partnerData?.userName}</h2>
+                            <h2 onClick={() => navigate(`/profile/${partnerData?.userName}`)} className="text-[15px] font-semibold cursor-pointer tracking-wide">{partnerData?.userName}</h2>
                             <div className="flex items-center gap-1.5">
-                                <span className="size-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
-                                <span className="text-[11px] text-emerald-500 font-medium uppercase tracking-widest">Online</span>
+                                <span className={`size-1.5 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-gray-500'
+                                        }`}
+                                />
+                                <span className="text-[11px]">
+                                    {isOnline ? 'Online' : 'Offline'}
+                                </span>
+
                             </div>
                         </div>
                     </div>

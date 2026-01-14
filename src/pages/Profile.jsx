@@ -12,6 +12,7 @@ import UserSavedPosts from '../components/UserSavedPosts';
 import UserReels from '../components/UserReels';
 import { logout } from '../stores/slice/authSlice';
 import { toast } from 'react-toastify';
+import socket from '../socket';
 
 const Profile = () => {
     const { fetchedUserData, user, userLoading, userFetchLoading } = useSelector((state) => state.user)
@@ -26,6 +27,7 @@ const Profile = () => {
 
     const handleLogOut = async () => {
         if (window.confirm('Are you want to Logged Out?')) {
+            socket.disconnect()
             try {
                 await dispatch(logout()).unwrap()
                 toast.success('Log out successfully')
