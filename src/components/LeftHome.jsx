@@ -8,15 +8,17 @@ import { toast } from 'react-toastify'
 import { useNavigate } from 'react-router-dom'
 import { followUnfollow, getSuggestedUser } from '../stores/slice/userSlice'
 import { useState } from 'react'
+import socket from '../socket'
 
 const LeftHome = () => {
-    const { user, suggestedUser } = useSelector((state) => state.user)
+    const { user, suggestedUser, socketConnected } = useSelector((state) => state.user)
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const [isfollow, setIsFollow] = useState(false)
     const handleLogout = async () => {
         if (window.confirm('Are you want to Logged Out?')) {
             try {
+                socket.disconnect()
                 await dispatch(logout()).unwrap()
                 toast.success('Log out successfully')
                 navigate('/login')
@@ -60,7 +62,7 @@ const LeftHome = () => {
                             alt="userLogo"
                             className='size-12 rounded-full object-cover border border-gray-700'
                         />
-                        <span className='absolute bottom-0 right-0 size-3 bg-green-500 border-2 border-black rounded-full'></span>
+                        <span className={`absolute bottom-0 right-0 size-3 ${socketConnected ? 'bg-green-500': 'bg-gray-800'} border-2 border-black rounded-full`}></span>
                     </div>
                     <div className='flex flex-col max-w-30'>
                         <p className='font-bold text-sm text-white truncate'>{user?.userName || "Username"}</p>
