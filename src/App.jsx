@@ -16,6 +16,7 @@ import Post from './pages/Post'
 import Reels from './pages/Reels'
 import Chat from './pages/Chat'
 import RightHome from './components/RightHome'
+import UseSocket from './hooks/UseSocket'
 
 
 const router = createBrowserRouter([
@@ -89,6 +90,7 @@ const App = () => {
 
   //hooks
   UseGetUser()
+  UseSocket()
 
   return (
     <>

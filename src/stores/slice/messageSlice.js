@@ -49,7 +49,8 @@ const initialState = {
     messageLoading: false,
     messages: [],
     chatPartners: [],
-    partnerData: null
+    partnerData: null,
+    onlineUsers: {}
 }
 
 const messageSlice = createSlice({
@@ -65,6 +66,10 @@ const messageSlice = createSlice({
             if (idx !== -1) {
                 state.messages[idx].error = error;
             }
+        },
+        updatePresence: (state, action) => {
+            const { userId, online } = action.payload
+            state.onlineUsers[userId] = online
         }
     },
     extraReducers: (builder) => {
@@ -114,5 +119,5 @@ const messageSlice = createSlice({
     }
 })
 
-export const { messageOptimisticAdd, messageOptimisticFail } = messageSlice.actions
+export const { messageOptimisticAdd, messageOptimisticFail, updatePresence } = messageSlice.actions
 export default messageSlice.reducer
