@@ -1,11 +1,12 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { getAllMessages, messageOptimisticAdd, messageOptimisticFail, sendMessage } from '../stores/slice/messageSlice';
+import { getAllMessages, messageOptimisticAdd, messageOptimisticFail, replaceOptimisticMessage, sendMessage } from '../stores/slice/messageSlice';
 import { toast } from 'react-toastify';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Send, Image as ImageIcon, X, ChevronLeft, Loader2 } from 'lucide-react';
 import avatar from '../assets/avatar.png';
 import { nanoid } from '@reduxjs/toolkit';
+import socket from '../socket';
 
 const Chat = () => {
     const { messages, messageLoading, partnerData } = useSelector((state) => state.message);
@@ -53,10 +54,10 @@ const Chat = () => {
         const formData = new FormData();
         formData.append('text', text.trim());
         if (file) formData.append('file', file);
+        setText("");
 
         try {
             await dispatch(sendMessage({ data: formData, receiver: partnerId })).unwrap();
-            setText("");
             setFile(null);
             setPreviewImage(null);
         } catch (error) {
@@ -64,6 +65,20 @@ const Chat = () => {
             toast.error(error.message);
         }
     };
+
+    useEffect(() => {
+        const handleNewMessage = (message) => {
+            if (message.sender !== partnerId && message.receiver !== partnerId) {
+                return
+            }
+            dispatch(replaceOptimisticMessage(message))
+        }
+        socket.on('message:new', handleNewMessage)
+
+        return () => {
+            socket.off('message:new', handleNewMessage)
+        }
+    }, [dispatch, partnerId])
 
     useEffect(() => {
         dispatch(getAllMessages(partnerId));
@@ -94,7 +109,7 @@ const Chat = () => {
                             <h2 onClick={() => navigate(`/profile/${partnerData?.userName}`)} className="text-[15px] font-semibold cursor-pointer tracking-wide">{partnerData?.userName}</h2>
                             <div className="flex items-center gap-1.5">
                                 <span className={`size-1.5 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-gray-500'
-                                        }`}
+                                    }`}
                                 />
                                 <span className="text-[11px]">
                                     {isOnline ? 'Online' : 'Offline'}
@@ -144,7 +159,7 @@ const Chat = () => {
                                         </div>
 
                                         <span className="text-[10px] text-zinc-600 font-semibold px-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • Read
+                                            {new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                     </div>
                                 </div>

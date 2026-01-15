@@ -70,6 +70,22 @@ const messageSlice = createSlice({
         updatePresence: (state, action) => {
             const { userId, online } = action.payload
             state.onlineUsers[userId] = online
+        },
+        replaceOptimisticMessage: (state, action) => {
+            const realMsg = action.payload;
+
+            const idx = state.messages.findIndex(
+                (m) =>
+                    m._id.startsWith("temp-") &&
+                    m.sender === realMsg.sender &&
+                    m.text === realMsg.text
+            );
+
+            if (idx !== -1) {
+                state.messages[idx] = realMsg; // replace optimistic
+            } else {
+                state.messages.push(realMsg);  // receiver side
+            }
         }
     },
     extraReducers: (builder) => {
@@ -119,5 +135,5 @@ const messageSlice = createSlice({
     }
 })
 
-export const { messageOptimisticAdd, messageOptimisticFail, updatePresence } = messageSlice.actions
+export const { messageOptimisticAdd, messageOptimisticFail, updatePresence, replaceOptimisticMessage } = messageSlice.actions
 export default messageSlice.reducer
