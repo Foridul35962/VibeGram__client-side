@@ -162,7 +162,15 @@ const postSlice = createSlice({
             if (!state.post) return;
             state.post.likes = prevLikes;
         },
-        
+
+        updatePostLikeRealtimeSingle: (state, action) => {
+            const { postId, postLikes } = action.payload;
+
+            if (state.post && state.post._id === postId) {
+                state.post.likes = postLikes;
+            }
+        },
+
         likeOptimistic: (state, action) => {
             const { user, postId } = action.payload;
             if (!Array.isArray(state.items)) return;
@@ -172,7 +180,7 @@ const postSlice = createSlice({
 
             state.items[idx].likes = toggleLike(state.items[idx].likes, user);
         },
-        
+
         likeRollback: (state, action) => {
             const { postId, prevLikes } = action.payload;
             if (!Array.isArray(state.items)) return;
@@ -182,7 +190,13 @@ const postSlice = createSlice({
 
             state.items[idx].likes = prevLikes;
         },
-        
+
+        updatePostComment: (state, action) => {
+            if (!state.post) return;
+            const { comment } = action.payload;
+            state.post.comments.push(comment);
+        },
+
         resetPosts: (state) => {
             state.items = []
             state.page = 1
@@ -253,7 +267,6 @@ const postSlice = createSlice({
             })
             .addCase(commentPost.fulfilled, (state, action) => {
                 state.commentLoading = false
-                state.post.comments.push(action.payload.data.comment)
             })
             .addCase(commentPost.rejected, (state) => {
                 state.commentLoading = false
@@ -299,5 +312,13 @@ const postSlice = createSlice({
     }
 })
 
-export const { setPrevFetchedUserId, likeOptimisticSingle, likeOptimistic, likeRollbackSingle, resetPosts } = postSlice.actions
+export const {
+    setPrevFetchedUserId,
+    likeOptimisticSingle,
+    likeOptimistic,
+    likeRollbackSingle,
+    resetPosts,
+    updatePostLikeRealtimeSingle,
+    updatePostComment
+} = postSlice.actions
 export default postSlice.reducer

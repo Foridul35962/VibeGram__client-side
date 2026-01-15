@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { useParams, Link, useNavigate } from 'react-router-dom'
-import { commentPost, deletePost, getPost, likedUnlikedPost, likeOptimisticSingle, likeRollbackSingle, savedUnsavedPosts } from '../stores/slice/postSlice'
+import { commentPost, deletePost, getPost, likedUnlikedPost, likeOptimisticSingle, likeRollbackSingle, savedUnsavedPosts, updatePostComment, updatePostLikeRealtimeSingle } from '../stores/slice/postSlice'
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, Loader2, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import avatar from '../assets/avatar.png'
 import PostLoading from '../components/loading/PostLoading'
 import PostNotFound from '../components/not found/PostNotFound'
 import { toast } from 'react-toastify'
 import { toggleSavePost } from '../stores/slice/userSlice'
+import socket from '../socket'
 
 const Post = () => {
     const dispatch = useDispatch()
@@ -26,6 +27,47 @@ const Post = () => {
     useEffect(() => {
         dispatch(getPost(postId))
     }, [postId, dispatch])
+
+    //realtime like comment
+    useEffect(() => {
+        if (!postId) {
+            return
+        }
+        socket.emit('join:post', postId)
+
+        return () => {
+            socket.emit('leave:post', postId)
+        }
+    }, [postId])
+
+    //like post
+    useEffect(() => {
+        const handleUpdateLike = ({ postId: incomingId, postLikes }) => {
+            if (!postId || incomingId !== postId) return
+
+            dispatch(updatePostLikeRealtimeSingle({ postId: incomingId, postLikes }))
+        }
+
+        socket.on('update:post-like', handleUpdateLike)
+
+        return () => {
+            socket.off('update:post-like', handleUpdateLike)
+        }
+    }, [dispatch, postId])
+
+    //comment post
+    useEffect(() => {
+        const handleUpdateComment = ({ postId: incomingId, comment }) => {
+            if (!postId || postId !== incomingId) return
+            dispatch(updatePostComment({ comment }))
+        }
+
+        socket.on('update:post-comment', handleUpdateComment)
+
+        return () => {
+            socket.off('update:post-comment', handleUpdateComment)
+        }
+    })
 
     const handleDeletePost = async () => {
         if (window.confirm('Are you want to delete this post?')) {
