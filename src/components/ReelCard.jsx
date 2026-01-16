@@ -5,7 +5,8 @@ import { useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { followUnfollow, toggleFollow } from '../stores/slice/userSlice'
 import { toast } from 'react-toastify'
-import { commentReel, deleteReel, likedUnlikedReel, reelsLikeOptimistic, reelsLikeRollBack } from '../stores/slice/reelSlice'
+import { commentReel, deleteReel, likedUnlikedReel, reelsCommentRealTime, reelsLikeOptimistic, reelsLikeRealTime, reelsLikeRollBack } from '../stores/slice/reelSlice'
+import socket from '../socket'
 
 const ReelCard = forwardRef(({ r, isMuted, setIsMuted }, ref) => {
   const videoRef = useRef(null)
@@ -38,6 +39,46 @@ const ReelCard = forwardRef(({ r, isMuted, setIsMuted }, ref) => {
     observer.observe(el)
     return () => observer.disconnect()
   }, [])
+
+  //real time like
+  useEffect(() => {
+    if (!r) {
+      return
+    }
+    socket.emit('reel:join', r?._id)
+
+    return () => {
+      socket.emit('reel:leave', r?._id)
+    }
+  }, [r])
+
+  useEffect(() => {
+    const handleLike = ({ reelId, reelLikes }) => {
+      if (r?._id !== reelId) return
+
+      dispatch(reelsLikeRealTime({ reelId, reelLikes }))
+    }
+
+    socket.on('updateReel:like', handleLike)
+
+    return () => {
+      socket.off('updateReel:like', handleLike)
+    }
+  }, [dispatch, r])
+
+  useEffect(() => {
+    const handleComment = ({ reelId, comment }) => {
+      if (r?._id !== reelId) return
+
+      dispatch(reelsCommentRealTime({ reelId, comment }))
+    }
+
+    socket.on('updateReel:comment', handleComment)
+
+    return () => {
+      socket.off('updateReel:comment', handleComment)
+    }
+  })
 
   const togglePlay = () => {
     const v = videoRef.current

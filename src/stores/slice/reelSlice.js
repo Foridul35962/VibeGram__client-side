@@ -159,6 +159,25 @@ const reelSlice = createSlice({
                 ? prevLikes.map(l => String(l?._id ?? l))
                 : []
         },
+
+        reelsLikeRealTime: (state, action) => {
+            const { reelId, reelLikes } = action.payload
+
+            if (!Array.isArray(state.allReels)) return
+
+            const idx = state.allReels.findIndex(r => String(r?._id) === String(reelId))
+            if (idx === -1) return
+
+            state.allReels[idx].likes = reelLikes
+        },
+
+        reelsCommentRealTime: (state, action) => {
+            const { reelId, comment } = action.payload
+            const idx = state.allReels.findIndex(r => String(r?._id) === String(reelId))
+            if (idx === -1) return
+
+            state.allReels[idx].comments.push(comment)
+        }
     },
     extraReducers: (builder) => {
         //upload reel
@@ -229,13 +248,8 @@ const reelSlice = createSlice({
             .addCase(commentReel.pending, (state) => {
                 state.reelCommentLoading = true
             })
-            .addCase(commentReel.fulfilled, (state, action) => {
+            .addCase(commentReel.fulfilled, (state) => {
                 state.reelCommentLoading = false
-                const { reelId, comment } = action.payload.data
-                const idx = state.allReels.findIndex(r => String(r?._id) === String(reelId))
-                if (idx === -1) return
-
-                state.allReels[idx].comments.push(comment)
             })
             .addCase(commentReel.rejected, (state) => {
                 state.reelCommentLoading = false
@@ -250,11 +264,17 @@ const reelSlice = createSlice({
                 const reelId = action.payload.data
                 state.allReels = state.allReels.filter(r => r._id !== reelId)
             })
-            .addCase(deleteReel.rejected, (state)=>{
+            .addCase(deleteReel.rejected, (state) => {
                 state.reelCommentLoading = false
             })
     }
 })
 
-export const { setPrevFetchedUserId, reelsLikeOptimistic, reelsLikeRollBack } = reelSlice.actions
+export const {
+    setPrevFetchedUserId,
+    reelsLikeOptimistic,
+    reelsLikeRollBack,
+    reelsLikeRealTime,
+    reelsCommentRealTime } = reelSlice.actions
+
 export default reelSlice.reducer
