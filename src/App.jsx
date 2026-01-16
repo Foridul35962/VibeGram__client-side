@@ -17,6 +17,7 @@ import Reels from './pages/Reels'
 import Chat from './pages/Chat'
 import RightHome from './components/RightHome'
 import UseSocket from './hooks/UseSocket'
+import Search from './pages/Search'
 
 
 const router = createBrowserRouter([
@@ -58,6 +59,10 @@ const router = createBrowserRouter([
           {
             path: '/messages',
             element: <RightHome />
+          },
+          {
+            path: '/search',
+            element: <Search />
           },
         ]
       },

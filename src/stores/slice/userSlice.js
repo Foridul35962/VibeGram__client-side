@@ -76,6 +76,18 @@ export const updateUserProfile = createAsyncThunk(
     }
 )
 
+export const searchUser = createAsyncThunk(
+    'user/search',
+    async(user, {rejectWithValue})=>{
+        try {
+            const res = axios.get(`${SERVER_URL}/search-user?user=${user}`)
+            return res.data
+        } catch (error) {
+            return rejectWithValue(error?.response?.data || "Something went wrong")
+        }
+    }
+)
+
 const initialState = {
     userLoading: false,
     user: null,
@@ -84,6 +96,8 @@ const initialState = {
     userFetchLoading: false,
     suggestedUser: [],
     socketConnected: false,
+    searchUser: [],
+    searchLoading: false
 }
 
 const userSlice = createSlice({
@@ -210,6 +224,18 @@ const userSlice = createSlice({
                 } else {
                     state.user.savedPosts = state.user.savedPosts.filter(id => id !== action.payload.data)
                 }
+            })
+        //search user
+        builder
+            .addCase(searchUser.pending, (state)=>{
+                state.searchLoading = true
+            })
+            .addCase(searchUser.fulfilled, (state, action)=>{
+                state.searchLoading = false
+                state.searchUser = action.payload.data
+            })
+            .addCase(searchUser.rejected, (state)=>{
+                state.searchLoading = false
             })
     }
 })
