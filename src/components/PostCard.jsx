@@ -3,15 +3,42 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Heart, MessageCircle, Bookmark, Send, ChevronLeft, ChevronRight } from 'lucide-react'
 import avatar from '../assets/avatar.png'
 import { useDispatch, useSelector } from 'react-redux'
-import { likedUnlikedPost, likeOptimistic, savedUnsavedPosts } from '../stores/slice/postSlice'
+import { likedUnlikedPost, likeOptimistic, savedUnsavedPosts, updatePostLikeRealTime } from '../stores/slice/postSlice'
 import { toast } from 'react-toastify'
 import { followUnfollow, toggleFollow, toggleSavePost } from '../stores/slice/userSlice'
+import { useEffect } from 'react'
+import socket from '../socket'
 
 const PostCard = ({ post }) => {
     const [currentIndex, setCurrentIndex] = useState(0)
     const { user, userLoading } = useSelector((state) => state.user)
     const dispatch = useDispatch()
     const navigate = useNavigate()
+
+    //realtime like
+    useEffect(() => {
+        if (!post) return
+
+        socket.emit('join:post', post._id)
+
+        return () => {
+            socket.emit('leave:post', post._id)
+        }
+    }, [post])
+
+    useEffect(() => {
+        const handleLikePost = ({ postId, postLikes }) => {
+            if (!post || post._id !== postId) return
+
+            dispatch(updatePostLikeRealTime({ postId, postLikes }))
+        }
+
+        socket.on('update:post-like', handleLikePost)
+
+        return () => {
+            socket.off('update:post-like', handleLikePost)
+        }
+    }, [dispatch, post])
 
     const likesArr = Array.isArray(post?.likes) ? post.likes : [];
 

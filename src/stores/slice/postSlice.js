@@ -191,6 +191,15 @@ const postSlice = createSlice({
             state.items[idx].likes = prevLikes;
         },
 
+        updatePostLikeRealTime: (state, action) => {
+            const { postId, postLikes } = action.payload;
+
+            const idx = state.items.findIndex(p => p._id === postId);
+            if (idx !== -1) {
+                state.items[idx].likes = postLikes;
+            }
+        },
+
         updatePostComment: (state, action) => {
             if (!state.post) return;
             const { comment } = action.payload;
@@ -319,6 +328,7 @@ export const {
     likeRollbackSingle,
     resetPosts,
     updatePostLikeRealtimeSingle,
+    updatePostLikeRealTime,
     updatePostComment
 } = postSlice.actions
 export default postSlice.reducer
