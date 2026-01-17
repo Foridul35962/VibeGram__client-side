@@ -12,6 +12,7 @@ import socket from '../socket'
 
 const LeftHome = () => {
     const { user, suggestedUser, socketConnected } = useSelector((state) => state.user)
+    const { notificationData } = useSelector((state) => state.notification)
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const [isfollow, setIsFollow] = useState(false)
@@ -40,7 +41,6 @@ const LeftHome = () => {
             toast.error(error.message)
         }
     }
-    
 
     return (
         <div className='w-1/4 hidden lg:flex flex-col gap-6 min-h-screen h-screen sticky top-0 p-6 border-r border-gray-800 bg-black'>
@@ -48,8 +48,12 @@ const LeftHome = () => {
             {/* Top Header: Logo & Notifications */}
             <div className='flex justify-between items-center mb-4'>
                 <img src={logo} alt="logo" className='w-32 object-contain cursor-pointer' />
-                <div className='p-2 hover:bg-gray-900 rounded-full transition duration-300 cursor-pointer'>
+                <div onClick={()=>navigate('/notification')} className='p-2 relative hover:bg-gray-900 rounded-full transition duration-300 cursor-pointer'>
                     <Heart size={24} className='text-white' />
+                    {
+                        notificationData?.length>0 && notificationData.some((noti)=>noti.isRead === false) &&
+                        <div className='size-2 rounded-full bg-blue-600 absolute top-2 right-2' />
+                    }
                 </div>
             </div>
 
@@ -62,7 +66,7 @@ const LeftHome = () => {
                             alt="userLogo"
                             className='size-12 rounded-full object-cover border border-gray-700'
                         />
-                        <span className={`absolute bottom-0 right-0 size-3 ${socketConnected ? 'bg-green-500': 'bg-gray-800'} border-2 border-black rounded-full`}></span>
+                        <span className={`absolute bottom-0 right-0 size-3 ${socketConnected ? 'bg-green-500' : 'bg-gray-800'} border-2 border-black rounded-full`}></span>
                     </div>
                     <div className='flex flex-col max-w-30'>
                         <p className='font-bold text-sm text-white truncate'>{user?.userName || "Username"}</p>

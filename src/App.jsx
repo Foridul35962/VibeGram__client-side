@@ -18,6 +18,8 @@ import Chat from './pages/Chat'
 import RightHome from './components/RightHome'
 import UseSocket from './hooks/UseSocket'
 import Search from './pages/Search'
+import UseNotification from './hooks/UseNotification'
+import Notification from './pages/Notification'
 
 
 const router = createBrowserRouter([
@@ -64,6 +66,10 @@ const router = createBrowserRouter([
             path: '/search',
             element: <Search />
           },
+          {
+            path: '/notification',
+            element: <Notification />
+          },
         ]
       },
       {
@@ -95,6 +101,7 @@ const App = () => {
 
   //hooks
   UseGetUser()
+  UseNotification()
   UseSocket()
 
   return (

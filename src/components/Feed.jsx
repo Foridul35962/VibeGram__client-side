@@ -13,6 +13,7 @@ const Feed = () => {
   const navigate = useNavigate()
   const { allStory, myStory } = useSelector((state) => state.story)
   const { user } = useSelector((state) => state.user)
+  const { notificationData } = useSelector((state) => state.notification)
 
   const [openStory, setOpenStory] = useState(false)
   const [activeGroup, setActiveGroup] = useState(null) // {author, stories}
@@ -37,8 +38,14 @@ const Feed = () => {
       <div className='flex lg:hidden justify-between items-center mb-4'>
         <img src={logo} alt="logo" className='w-32 object-contain cursor-pointer' />
         <div className='flex gap-3 items-center p-2 hover:bg-gray-900 rounded-full transition duration-300 cursor-pointer'>
-          <MessageCircle onClick={()=>navigate('/messages')} size={24} className='text-white' />
-          <Heart size={24} className='text-white' />
+          <MessageCircle onClick={() => navigate('/messages')} size={24} className='text-white' />
+          <div onClick={() => navigate('/notification')} className='relative'>
+            <Heart size={24} className='text-white' />
+            {
+              notificationData?.length > 0 && notificationData.some((noti) => noti.isRead === false) &&
+              <div className='size-2 rounded-full bg-blue-600 absolute top-0 right-0' />
+            }
+          </div>
         </div>
       </div>
 
