@@ -76,11 +76,13 @@ export const updateUserProfile = createAsyncThunk(
     }
 )
 
-export const searchUser = createAsyncThunk(
+export const searchUsers = createAsyncThunk(
     'user/search',
     async(user, {rejectWithValue})=>{
         try {
-            const res = axios.get(`${SERVER_URL}/search-user?user=${user}`)
+            const res = await axios.get(`${SERVER_URL}/search-user?user=${user}`,
+                {withCredentials: true}
+            )
             return res.data
         } catch (error) {
             return rejectWithValue(error?.response?.data || "Something went wrong")
@@ -227,14 +229,14 @@ const userSlice = createSlice({
             })
         //search user
         builder
-            .addCase(searchUser.pending, (state)=>{
+            .addCase(searchUsers.pending, (state)=>{
                 state.searchLoading = true
             })
-            .addCase(searchUser.fulfilled, (state, action)=>{
+            .addCase(searchUsers.fulfilled, (state, action)=>{
                 state.searchLoading = false
                 state.searchUser = action.payload.data
             })
-            .addCase(searchUser.rejected, (state)=>{
+            .addCase(searchUsers.rejected, (state)=>{
                 state.searchLoading = false
             })
     }
