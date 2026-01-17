@@ -103,7 +103,7 @@ const Chat = () => {
                                 alt="partner"
                                 onClick={() => navigate(`/profile/${partnerData?.userName}`)}
                             />
-                            <div className="absolute bottom-0 right-0 size-3.5 bg-emerald-500 border-[3px] border-[#09090b] rounded-full"></div>
+                            <div className={`absolute bottom-0 right-0 size-3.5 ${isOnline? 'bg-emerald-500' : 'bg-gray-500'}  border-[3px] border-[#09090b] rounded-full`}></div>
                         </div>
                         <div>
                             <h2 onClick={() => navigate(`/profile/${partnerData?.userName}`)} className="text-[15px] font-semibold cursor-pointer tracking-wide">{partnerData?.userName}</h2>
